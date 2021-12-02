@@ -12,13 +12,8 @@
       // If you have changed target frameworks, make sure to update the program path.
       "program": "${workspaceFolder}/Swallow/bin/Debug/net6.0/Swallow.dll",
       "args": [],
-      "cwd": "${workspaceFolder}",
+      "cwd": "${workspaceFolder}/Swallow",
       "stopAtEntry": false,
-      // Enable launching a web browser when ASP.NET Core starts. For more information: https://aka.ms/VSCode-CS-LaunchJson-WebBrowser
-      "serverReadyAction": {
-        "action": "openExternally",
-        "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
-      },
       "env": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
@@ -30,6 +25,26 @@
       "name": ".NET Core Attach",
       "type": "coreclr",
       "request": "attach"
+    },
+    {
+      "name": ".NET Core Test with debugger",
+      "type": "process",
+      "request": "launch",
+      "isBackground": true,
+      "command": "dotnet",
+      "args": ["test"],
+      "options": {
+        "cwd": "${workspaceFolder}/Swallow.Tests",
+        "env": { "VSTEST_HOST_DEBUG": "1" }
+      },
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": []
     }
   ]
 }

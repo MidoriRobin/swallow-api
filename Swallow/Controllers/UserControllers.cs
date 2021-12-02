@@ -5,66 +5,70 @@ using Microsoft.AspNetCore.Mvc;
 namespace Swallow.Controllers;
 
 [ApiController]
-[Route("[controller]")]
+[Route("api/[controller]")]
 public class UserController : ControllerBase
 {
-    public UserController()
-    {
-    }
+    private readonly UserService _usersService;
 
-    // GET all action
+    public UserController(UserService userService) => _usersService = userService;
+
     [HttpGet]
-    public ActionResult<List<User>> GetAll() => UserService.GetAll();
+    public async Task<List<User>> Get() => await _usersService.GetAsync();
 
-    // GET by Id action
-    [HttpGet("{id}")]
-    public ActionResult<User> Get(int id)
+    [HttpGet("{id:length(24)}")]
+    public async Task<ActionResult<User>> Get(string id)
     {
-        var user = UserService.Get(id);
+        var user = await _usersService.GetAsync(id);
 
-        if (user == null)
+        if (user is null)
+        {
             return NotFound();
-        
+        }
+
         return user;
     }
 
-    // POST action
     [HttpPost]
-public IActionResult Create(User user)
-{            
-    UserService.Add(user);
-    return CreatedAtAction(nameof(Create), new { id = user.Id }, user);
-}
+    public async Task<IActionResult> Post(User newUser)
+    {
+        await _usersService.CreateAsync(newUser);
 
-    // PUT action
-    [HttpPut("{id}")]
-public IActionResult Update(int id, User user)
-{
-    if (id != user.Id)
-        return BadRequest();
-    
-    var existingUser = UserService.Get(id);
+        // ? Seek to understand this a bit better
+        return CreatedAtAction(nameof(Get), new { id = newUser.Id }, newUser);
+    }
 
-    if (existingUser is null)
-        return NotFound();
-    
-    UserService.Update(user);
 
-    return NoContent();
-    
-}
+    [HttpPut("{id:length(24)}")]
+    public async Task<IActionResult> Update(string id, User updatedUser)
+    {
+        var user = await _usersService.GetAsync(id);
 
-    // DELETE action
-    [HttpDelete("{id}")]
-public IActionResult Delete(int id)
-{
-    var user = UserService.Get(id);
+        if (user is null)
+        {
+            return NotFound();
+        }
 
-    if (user is null)
-        return NotFound();
-    
-    UserService.Delete(id);
+        updatedUser.Id = user.Id;
 
-    return NoContent();
-}
+        await _usersService.UpdateAsync(id, updatedUser);
+
+        return NoContent();
+    }
+
+    [HttpDelete("{id:length(24)}")]
+    public async Task<IActionResult> Delete(string id)
+    {
+        var user = await _usersService.GetAsync(id);
+
+        if (user is null)
+        {
+            return NotFound();
+        }
+
+        // ? look into warning 
+        await _usersService.RemoveAsync(user.Id);
+
+        return NoContent();
+    }
+
 }

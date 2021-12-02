@@ -3,6 +3,9 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
+# Ignoring Env files
+.env
+
 # User-specific files
 *.rsuser
 *.suo
@@ -452,3 +455,6 @@ $RECYCLE.BIN/
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+ER - Diagram.md
+ProcessMGMT.md
+TODO

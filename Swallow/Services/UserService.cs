@@ -1,45 +1,36 @@
+using Microsoft.Extensions.Options;
+using MongoDB.Driver;
 using Swallow.Models;
 
-namespace Swallow.Services;
-
-public static class UserService
+namespace Swallow.Services
 {
-    static List<User> Users { get; }
-    static int nextId = 3;
-    static UserService()
+    public class UserService
     {
-        Users = new List<User>
+        //* Implement mongo user collection
+        private readonly IMongoCollection<User> _usersCollection;
+
+        //* Add user service constructor and inject settings
+        public UserService(IOptions<SwallowDatabaseSettings> swallowDatabaseSettings)
         {
-            new User { Id = 1, Name = "Giselle Todd", IsAdmin = false },
-            new User { Id = 2, Name = "Christopher Robinson", IsAdmin = true }
-        };
-    }
+            //Database setup 
+            // var mongoClient = new MongoClient(swallowDatabaseSettings.Value.ConnectionString);
+            // var mongoDatabase = mongoClient.GetDatabase(swallowDatabaseSettings.Value.DatabaseName);
 
-    public static List<User> GetAll() => Users;
+            var mongoClient = new MongoClient(Environment.GetEnvironmentVariable("DATABASES__CONNECTIONSTRING"));
+            var mongoDatabase = mongoClient.GetDatabase(Environment.GetEnvironmentVariable("DATABASES__MAIN__DATABASENAME"));
 
-    public static User? Get(int id) => Users.FirstOrDefault(p => p.Id == id);
+            // User collection object
+            _usersCollection = mongoDatabase.GetCollection<User>(swallowDatabaseSettings.Value.UsersCollectionName);
+        }
 
-    public static void Add(User user)
-    {
-        user.Id = nextId++;
-        Users.Add(user);
-    }
+        public async Task<List<User>> GetAsync() => await _usersCollection.Find(_ => true).ToListAsync();
 
-    public static void Delete(int id)
-    {
-        var user = Get(id);
-        if(user is null)
-            return;
+        public async Task<User?> GetAsync(string id) => await _usersCollection.Find(x => x.Id == id).FirstOrDefaultAsync();
 
-        Users.Remove(user);
-    }
+        public async Task CreateAsync(User newUser) => await _usersCollection.InsertOneAsync(newUser);
 
-    public static void Update(User user)
-    {
-        var index = Users.FindIndex(p => p.Id == user.Id);
-        if(index == -1)
-            return;
+        public async Task UpdateAsync(string id, User updatedUser) => await _usersCollection.ReplaceOneAsync(x => x.Id == id, updatedUser);
 
-        Users[index] = user;
+        public async Task RemoveAsync(string id) => await _usersCollection.DeleteOneAsync(x => x.Id == id);
     }
 }
