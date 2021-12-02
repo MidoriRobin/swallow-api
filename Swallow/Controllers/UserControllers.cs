@@ -1,6 +1,7 @@
 using Swallow.Models;
 using Swallow.Services;
 using Microsoft.AspNetCore.Mvc;
+using Swallow.Models.DTOs;
 
 namespace Swallow.Controllers;
 
@@ -15,6 +16,7 @@ public class UserController : ControllerBase
     [HttpGet]
     public async Task<List<User>> Get() => await _usersService.GetAsync();
 
+
     [HttpGet("{id:length(24)}")]
     public async Task<ActionResult<User>> Get(string id)
     {
@@ -28,6 +30,7 @@ public class UserController : ControllerBase
         return user;
     }
 
+
     [HttpPost]
     public async Task<IActionResult> Post(User newUser)
     {
@@ -35,6 +38,33 @@ public class UserController : ControllerBase
 
         // ? Seek to understand this a bit better
         return CreatedAtAction(nameof(Get), new { id = newUser.Id }, newUser);
+    }
+
+
+    // ? What needs to be done in registration
+    [HttpPost("register")]
+    public async Task<IActionResult> Register([FromForm] User newUser)
+    {
+
+        // Do I need to create an error object?
+
+        Dictionary<string, string> result = await _usersService.processRegistration(newUser);
+
+        if (!result["success"].Equals("True"))
+        {
+            return BadRequest(result["reason"]);
+        }
+
+        var userDTO = new UserDTO()
+        {
+            Id = newUser.Id,
+            Name = newUser.Name,
+            Username = newUser.Username,
+            Email = newUser.Email,
+            Occupation = newUser.Occupation
+        };
+
+        return CreatedAtAction(nameof(Get), new { id = newUser.Id }, userDTO);
     }
 
 
@@ -54,6 +84,7 @@ public class UserController : ControllerBase
 
         return NoContent();
     }
+
 
     [HttpDelete("{id:length(24)}")]
     public async Task<IActionResult> Delete(string id)

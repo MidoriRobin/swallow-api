@@ -1,6 +1,8 @@
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using Swallow.Models;
+using BCryptNet = BCrypt.Net.BCrypt;
+using System.Net.Mail;
 
 namespace Swallow.Services
 {
@@ -32,5 +34,45 @@ namespace Swallow.Services
         public async Task UpdateAsync(string id, User updatedUser) => await _usersCollection.ReplaceOneAsync(x => x.Id == id, updatedUser);
 
         public async Task RemoveAsync(string id) => await _usersCollection.DeleteOneAsync(x => x.Id == id);
+        
+        public async Task<bool> DoesExistAsync(string email) => await _usersCollection.Find(x => x.Email == email).FirstOrDefaultAsync() != null ? true : false;
+        
+        public async Task<Dictionary<string, string>> processRegistration(User newUser)
+        {
+            Dictionary<string, string> result = new Dictionary<string, string>();
+
+            bool processSuccess = false;
+            bool isValidEmail = false;
+            bool doesExist = false;
+            string reason = "";
+
+            try
+            {
+                MailAddress validMailAddress = new MailAddress(newUser.Email);
+                isValidEmail = true;     
+            }
+            finally
+            {
+                doesExist = await DoesExistAsync(newUser.Email);
+            }
+
+
+            if (isValidEmail && !doesExist)
+            {
+                newUser.Password = BCryptNet.HashPassword(newUser.Password);
+                
+                await CreateAsync(newUser);
+
+                processSuccess = true;
+            }else
+            {
+                reason = !isValidEmail ? "Invalid email" : "Email already exists";
+            }
+
+            result.Add("success", processSuccess.ToString());
+            result.Add("reason", reason.ToString());
+
+            return result;
+        }
     }
 }
