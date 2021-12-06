@@ -1,6 +1,7 @@
 using System;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Swallow.Authorization;
 using Swallow.Models;
 using Swallow.Models.DTOs;
 using Swallow.Services;
@@ -16,11 +17,13 @@ public class AuthenticationController : ControllerBase
     private readonly IJwtAuth jwtAuth;
 
     public readonly UserService _userService;
+    public readonly TokenBlacklistService _tokenBlacklistService;
 
-    public AuthenticationController(IJwtAuth jwtAuth, UserService userService)
+    public AuthenticationController(IJwtAuth jwtAuth, UserService userService, TokenBlacklistService tokenBlacklistService)
     {
         this.jwtAuth = jwtAuth;
         _userService = userService;
+        _tokenBlacklistService = tokenBlacklistService;
     }
 
     [HttpGet]
@@ -40,27 +43,48 @@ public class AuthenticationController : ControllerBase
     }
 
     [AllowAnonymous]
-    [HttpPost("authentication")]
+    [HttpPost("authenticate")]
     public IActionResult Authentication([FromBody]UserLoginDTO userCredentials)
     {
         var token = jwtAuth.Authentication(userCredentials.Email, userCredentials.Password);
         
         if(token == null)
-            return Unauthorized();
+            return Unauthorized("Invalid Credentials");
         
         return Ok(token);
     }
 
-    [HttpPost("login")]
-    public ActionResult Login()
-    {
+    // [HttpPost("login")]
+    // public ActionResult Login()
+    // {
 
-        return NoContent();
-    }
+    //     return NoContent();
+    // }
 
 
     [HttpPost("logout")]
-    public async Task<IActionResult> Logout() => NoContent();
+    public async Task<IActionResult> Logout()
+    {
+        var currentUser = HttpContext.User;
+
+
+        var claims = currentUser.Claims;
+        string userEmail = claims.ToArray()[0].Value;
+
+
+        bool didReset = await _userService.ResetTokenDateAsync(userEmail);
+        
+        if (!didReset)
+            return NotFound();
+        
+        string token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
+
+        DateTime now = DateTime.UtcNow;
+
+        await _tokenBlacklistService.CreateAsync(new TokenBlacklist(){Token = token, EntryDate = now, BelongsTo = userEmail});
+
+        return NoContent();
+    }
 
 }
 

@@ -20,4 +20,6 @@ public class User
     public string? Occupation { get; set; }
 
     public bool IsAdmin { get; set; }
+
+    public DateTime? TokenExpiry { get; set; }
 }

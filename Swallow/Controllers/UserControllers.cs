@@ -2,9 +2,11 @@ using Swallow.Models;
 using Swallow.Services;
 using Microsoft.AspNetCore.Mvc;
 using Swallow.Models.DTOs;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Swallow.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class UserController : ControllerBase
@@ -41,6 +43,8 @@ public class UserController : ControllerBase
     }
 
 
+
+    [AllowAnonymous]
     // ? What needs to be done in registration
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromForm] User newUser)
