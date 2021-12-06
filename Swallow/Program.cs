@@ -1,11 +1,65 @@
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using Swallow;
+using Swallow.Authorization;
+using Swallow.Models;
+using Swallow.Services;
+
+// Loading env files
+var root = Directory.GetCurrentDirectory();
+
+var dotenv = Path.Combine(root, ".env");
+DotEnv.Load(dotenv);
+
+// -----
+
+var key = Environment.GetEnvironmentVariable("JWT__SECRET");
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddControllers();
+//* Load data in app settings into database settings object
+builder.Services.Configure<SwallowDatabaseSettings>(
+    builder.Configuration.GetSection("SwallowDatabase"));
+
+builder.Services.AddControllers()
+    .AddJsonOptions(options => options.JsonSerializerOptions.PropertyNamingPolicy = null);
+
+
+// Adding authentication 
+builder.Services.AddAuthentication(x =>
+{
+    x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(x =>
+{
+    x.RequireHttpsMetadata = false;
+    x.SaveToken = true;
+    x.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+    {
+        ValidateIssuerSigningKey = true,
+        ValidateIssuer = false,
+        ValidateAudience = false,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(key))
+    };
+});
+
+//?
+builder.Services.AddSingleton<UserService>();
+builder.Services.AddSingleton<TokenBlacklistService>();
+
+//Injecting the user service into auth
+builder.Services.AddSingleton<IJwtAuth>(serviceProvider => new Auth(key, serviceProvider.GetRequiredService<UserService>()));
+
+
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+//TODO: Look into swagger stuff
+
 
 var app = builder.Build();
 
@@ -18,7 +72,11 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
+
 app.UseAuthorization();
+
+app.UseMiddleware<JwtMiddleware>();
 
 app.MapControllers();
 
