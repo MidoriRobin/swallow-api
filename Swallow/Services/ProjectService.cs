@@ -24,6 +24,8 @@ namespace Swallow.Services;
         public async Task<Project?> GetProjectAsync(string id) => await _projectCollection.Find(x => x.Id == id).FirstOrDefaultAsync();
 
         public async Task<List<Project>> GetProjectsByOwnerAsync(string ownerId) => await _projectCollection.Find(x => x.OwnerId == ownerId).ToListAsync();
+        
+        public async Task<Project> GetProjectByOwnerAsync(string ownerId, string id) => await _projectCollection.Find(x => x.OwnerId == ownerId && x.Id == id).FirstOrDefaultAsync();
 
         public async Task<List<Project>> GetProjectsByGroupIdAsync(string groupId) => await _projectCollection.Find(x => x.GroupId == groupId).ToListAsync();
 
