@@ -1,0 +1,54 @@
+
+[
+"Projects": 
+   {
+      $jsonSchema: {
+         bsonType: "object",
+         required: [ "Name", "Type", "Description", "OwnerId", "CreatedDate" ],
+         properties: {
+            Name: {
+               bsonType: "string",
+               description: "must be a string and is required"
+            },
+            Type: {
+               enum: [ "Software Development", "Project Management", "Business Issue Tracking", null ],
+               description: "must be an integer in [ 2017, 3017 ] and is required"
+            },
+            Description: {
+               bsonType: "string",               
+               description: "can only be one of the enum values and is required"
+            },
+            OwnerId: {  
+               bsonType: "objectId",
+               description: "must be a double if the field exists"
+            },
+            CreatedDate: {
+               bsonType: "date",
+               description: "must be a date if the field exists"
+            },
+            ExpectedEnd: {
+               bsonType: "date",
+               description: "must be a date if the field exists, null should be unix epoch time"
+            },
+            MemberList:{
+               bsonType: "array",
+               description: "must be an array of objectIds the field exists"
+            },
+            GroupId: {
+               bsonType: "objectId",
+               description: "must be an array of objectIds the field exists"
+            }
+         }
+      },
+      Example Data: [
+         {
+            "Name": "Swallow",
+            "Type": "Software Development",
+            "Description": "An issue tracking application for software development",
+            "OwnerId": "61a6390eb28cbab36857ec44",
+            "CreatedDate": ISODate("1970-01-01T00:00:00.000Z")
+         }
+      ]
+   },
+
+]

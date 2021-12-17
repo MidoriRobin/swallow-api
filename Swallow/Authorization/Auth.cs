@@ -42,7 +42,8 @@ namespace Swallow.Authorization;
                 Subject = new ClaimsIdentity(
                     new Claim[]
                     {
-                        new Claim(ClaimTypes.Name, email),
+                        new Claim(ClaimTypes.Email, email),
+                        new Claim(ClaimTypes.Name, user.Id),
                         new Claim(ClaimTypes.Role, user.IsAdmin ? "admin" : "user")
                     }),
                 Expires = DateTime.UtcNow.AddHours(1),
@@ -71,7 +72,7 @@ namespace Swallow.Authorization;
             
             var jwtToken = new JwtSecurityTokenHandler().ReadJwtToken(token);
 
-            var email = jwtToken.Claims.First(x => x.Type == "unique_name").Value;
+            var email = jwtToken.Claims.First(x => x.Type == "email").Value;
 
             if (email == null)
             {

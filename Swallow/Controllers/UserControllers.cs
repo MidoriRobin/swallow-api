@@ -15,10 +15,12 @@ public class UserController : ControllerBase
 
     public UserController(UserService userService) => _usersService = userService;
 
+    [Authorize(Roles ="admin")]
     [HttpGet]
     public async Task<List<User>> Get() => await _usersService.GetAsync();
 
 
+    [Authorize(Roles ="admin")]
     [HttpGet("{id:length(24)}")]
     public async Task<ActionResult<User>> Get(string id)
     {
@@ -32,7 +34,7 @@ public class UserController : ControllerBase
         return user;
     }
 
-
+    [Authorize(Roles ="admin")]
     [HttpPost]
     public async Task<IActionResult> Post(User newUser)
     {
@@ -72,6 +74,7 @@ public class UserController : ControllerBase
     }
 
 
+    [Authorize(Roles ="admin")]
     [HttpPut("{id:length(24)}")]
     public async Task<IActionResult> Update(string id, User updatedUser)
     {
@@ -90,6 +93,7 @@ public class UserController : ControllerBase
     }
 
 
+    [Authorize(Roles ="admin")]
     [HttpDelete("{id:length(24)}")]
     public async Task<IActionResult> Delete(string id)
     {
