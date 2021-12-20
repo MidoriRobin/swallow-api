@@ -8,7 +8,7 @@ using Swallow.Services;
 
 namespace Swallow.Controllers;
 
-    // [Authorize]
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class IssueController : ControllerBase
@@ -30,7 +30,7 @@ namespace Swallow.Controllers;
             return await _issueService.GetIssuesAsync();
         }
 
-        // [Authorize(Roles ="admin")]
+        [Authorize(Roles ="admin")]
         [HttpGet("{id:length(24)}")]
         public async Task<ActionResult<Issue>> GetIssueById(string id)
         {
