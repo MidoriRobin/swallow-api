@@ -25,6 +25,7 @@ namespace Swallow.Models;
 
         public List<String>? MemberList { get; set; }
 
+        [BsonRepresentation(BsonType.ObjectId)]
         public string? GroupId { get; set; }
         
     }

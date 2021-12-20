@@ -42,5 +42,7 @@ namespace Swallow.Services;
 
         public async Task RemoveAsync(string id) => await _projectCollection.DeleteOneAsync(x => x.Id == id);
 
+        public async Task<bool> IsUserInProject(string id, string userId) => await _projectCollection.Find(x => x.Id == id && (x.MemberList.Contains(userId) || x.OwnerId == userId)).FirstOrDefaultAsync() is null ? false : true;
+
     }
 

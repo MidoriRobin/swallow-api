@@ -7,6 +7,7 @@ namespace Swallow.Models
         public string UsersCollectionName { get; set; } = null;
         public string TokenBlacklistCollectionName { get; set; } = null;
         public string ProjectCollectionName { get; set; } = null;
+        public string IssuesCollectionName { get; set; } = null;
         public string ConnectionString { get; set; } = null;
         public string DatabaseName { get; set; } = null;
 

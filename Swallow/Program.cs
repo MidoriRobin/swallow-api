@@ -50,6 +50,7 @@ builder.Services.AddAuthentication(x =>
 builder.Services.AddSingleton<UserService>();
 builder.Services.AddSingleton<TokenBlacklistService>();
 builder.Services.AddSingleton<ProjectService>();
+builder.Services.AddSingleton<IssueService>();
 
 //Injecting the user service into auth
 builder.Services.AddSingleton<IJwtAuth>(serviceProvider => new Auth(key, serviceProvider.GetRequiredService<UserService>()));
