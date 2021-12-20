@@ -37,10 +37,10 @@
             GroupId: {
                bsonType: "objectId",
                description: "must be an array of objectIds the field exists"
-            }
+            },
          }
       },
-      Example Data: [
+      ExampleData: [
          {
             "Name": "Swallow",
             "Type": "Software Development",
@@ -50,5 +50,74 @@
          }
       ]
    },
+"Issues":
+   {
+      $jsonSchema: {
+         bsonType: "object",
+         required: [ "Name", "Type", "Status" "Description", "CreatorId", "ProjectId", "CreatedDate" ],
+         properties: {
+            Name: {
+               bsonType: "string",
+               description: "must be a string and is required"
+            },
+            Type: {
+               enum: [ "Todo", "Task", "Idea", "Issue", "Bug" ],
+               description: "must be an enum in the above array and is required"
+            },
+            Status: {
+               enum: [ "To-Do", "In progress", "Paused", "Completed", "Abandoned" ],
+               description: "must be an enum in the above array and is required"
+            },
+            Description: {
+               bsonType: "string",               
+               description: "A string that must be no greater than 255 characters in length"
+            },
+            CreatorId: {  
+               bsonType: "objectId",
+               description: "must be a objectId"
+            },
+            AssignedId: {  
+               bsonType: "objectId",
+               description: "must be a objectId"
+            },
+            ProjectId: {  
+               bsonType: "objectId",
+               description: "must be a objectId"
+            },
+            Weight: {
+               bsonType: "int",
+               description: "must be a number if the field exists"
+            },
+            CreatedDate: {
+               bsonType: "date",
+               description: "must be a date if the field exists"
+            },
+            CompletedDate: {
+               bsonType: "date",
+               description: "must be a date if the field exists, null should be unix epoch time"
+            },
+            TimeTaken:{
+               bsonType: "int",
+               description: "Must be an integer"
+            },
+            Sprint:{
+               bsonType: "int",
+               description: "Must be a integer"
+            },
+         }
+      },
+      ExampleData: [
+         {
+            "_id" : ObjectId("61baaeb03527b3245fa62450"),
+            "Name" : "Add issue tracking - Backend",
+            "Type" : "Task",
+            "Status" : "To-Do",
+            "Description" : "Implement issue tracking functionality for projects in the backend",
+            "CreatorId" : ObjectId("61a6390eb28cbab36857ec44"),
+            "ProjectId" : ObjectId("61b1553674b867092d59df2b"),
+            "CreatedDate" : ISODate("2021-12-16T02:25:15.540Z")
+         }
+      ]
+   }
 
 ]
