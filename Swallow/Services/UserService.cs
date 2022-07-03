@@ -19,7 +19,7 @@ namespace Swallow.Services;
             // var mongoClient = new MongoClient(swallowDatabaseSettings.Value.ConnectionString);
             // var mongoDatabase = mongoClient.GetDatabase(swallowDatabaseSettings.Value.DatabaseName);
 
-            var mongoClient = new MongoClient(Environment.GetEnvironmentVariable("DATABASES__CONNECTIONSTRING"));
+            var mongoClient = new MongoClient(Environment.GetEnvironmentVariable("DATABASES__CONNECTIONSTRING_MONGO"));
             var mongoDatabase = mongoClient.GetDatabase(Environment.GetEnvironmentVariable("DATABASES__MAIN__DATABASENAME"));
 
             // User collection object

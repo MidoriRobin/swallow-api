@@ -12,7 +12,7 @@ namespace Swallow.Services;
 
         public ProjectService(IOptions<SwallowDatabaseSettings> swallowDatabaseSettings)
         {
-            var mongoClient = new MongoClient(Environment.GetEnvironmentVariable("DATABASES__CONNECTIONSTRING"));
+            var mongoClient = new MongoClient(Environment.GetEnvironmentVariable("DATABASES__CONNECTIONSTRING_MONGO"));
             var mongoDatabase = mongoClient.GetDatabase(Environment.GetEnvironmentVariable("DATABASES__MAIN__DATABASENAME"));
 
             _projectCollection = mongoDatabase.GetCollection<Project>(swallowDatabaseSettings.Value.ProjectCollectionName);

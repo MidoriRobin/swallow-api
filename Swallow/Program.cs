@@ -46,6 +46,13 @@ builder.Services.AddAuthentication(x =>
     };
 });
 
+var MyAllowSpecificOrigin = "_myAllowSpecificOrigins";
+
+builder.Services.AddCors( x => x.AddPolicy(MyAllowSpecificOrigin, policy => {
+    // TODO: Save list of allowed origins to a variable and load in one by one
+    policy.WithOrigins("http://localhost:3000").AllowAnyHeader().AllowAnyMethod();
+}));
+
 //?
 builder.Services.AddSingleton<UserService>();
 builder.Services.AddSingleton<TokenBlacklistService>();
@@ -73,6 +80,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors(MyAllowSpecificOrigin);
 
 app.UseAuthentication();
 

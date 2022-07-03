@@ -11,7 +11,7 @@ namespace Swallow.Services;
 
         public TokenBlacklistService(IOptions<SwallowDatabaseSettings> swallowDatabaseSettings)
         {
-            var mongoClient = new MongoClient(Environment.GetEnvironmentVariable("DATABASES__CONNECTIONSTRING"));
+            var mongoClient = new MongoClient(Environment.GetEnvironmentVariable("DATABASES__CONNECTIONSTRING_MONGO"));
             var mongoDatabase = mongoClient.GetDatabase(Environment.GetEnvironmentVariable("DATABASES__MAIN__DATABASENAME")); 
 
             _tokenBlacklistCollection = mongoDatabase.GetCollection<TokenBlacklist>(swallowDatabaseSettings.Value.TokenBlacklistCollectionName);
