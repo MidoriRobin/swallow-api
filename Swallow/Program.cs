@@ -1,5 +1,6 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Swallow;
 using Swallow.Authorization;
@@ -52,6 +53,11 @@ builder.Services.AddCors( x => x.AddPolicy(MyAllowSpecificOrigin, policy => {
     // TODO: Save list of allowed origins to a variable and load in one by one
     policy.WithOrigins("http://localhost:3000").AllowAnyHeader().AllowAnyMethod();
 }));
+
+builder.Services.AddDbContext<SwallowContext> ( optionsAction =>
+
+    optionsAction.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
+);
 
 //?
 builder.Services.AddSingleton<UserService>();
