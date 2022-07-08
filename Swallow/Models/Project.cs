@@ -6,8 +6,6 @@ namespace Swallow.Models;
 
     public class Project
     {
-        [BsonId]
-        [BsonRepresentation(BsonType.ObjectId)]
         public string? Id { get; set; }
 
         public string Name { get; set; }
@@ -15,8 +13,6 @@ namespace Swallow.Models;
         public string Type { get; set; }
 
         public string Description { get; set; }
-
-        [BsonRepresentation(BsonType.ObjectId)]
         public string OwnerId { get; set; }
 
         public DateTime CreatedDate { get; set; }
@@ -24,8 +20,6 @@ namespace Swallow.Models;
         public DateTime? ExpectedEnd { get; set; }
 
         public List<String>? MemberList { get; set; }
-
-        [BsonRepresentation(BsonType.ObjectId)]
         public string? GroupId { get; set; }
         
     }

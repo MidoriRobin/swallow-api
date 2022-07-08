@@ -8,9 +8,6 @@ namespace Swallow.Models
 {
     public class Issue
     {
-        
-        [BsonId]
-        [BsonRepresentation(BsonType.ObjectId)]
         public string? Id { get; set; }
 
         public string Name { get; set; }
@@ -19,20 +16,8 @@ namespace Swallow.Models
 
         public string Status { get; set; }
         public string Description { get; set; }
-    
-        
-        [JsonConverter(typeof(StringToObjectId))]
-        // [BsonRepresentation(BsonType.ObjectId)]
         public ObjectId? CreatorId { get; set; }
-
-        
-        [JsonConverter(typeof(StringToObjectId))]
-        // [BsonRepresentation(BsonType.ObjectId)]
         public ObjectId? AssignedId { get; set; }
-
-        
-        [JsonConverter(typeof(StringToObjectId))]
-        // [BsonRepresentation(BsonType.ObjectId)]
         public ObjectId? ProjectId { get; set; }
 
         public int Weight { get; set; }
@@ -48,12 +33,4 @@ namespace Swallow.Models
         
     }
 
-    enum IssueStatus
-    {
-        Todo = 1,
-        InPro = 2,
-        Paused = 3,
-        Completed = 4,
-        Abandoned = 5
-    }
 }
