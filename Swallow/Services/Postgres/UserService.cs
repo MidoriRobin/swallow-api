@@ -93,4 +93,19 @@ namespace Swallow.Services.Postgres;
 
             return user;
         }
+    
+        public User CredCheck(string email, string password)
+        {
+            User returnedUser = _context.Users.Where(x => x.Email == email).First();
+
+            if (!BCryptNet.Verify(password, returnedUser.Password))
+            {
+                // throw AuthenticationException("");
+                returnedUser = null;
+            }
+
+
+            return returnedUser;
+        }
+    
     }
