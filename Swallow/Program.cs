@@ -5,7 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 using Swallow;
 using Swallow.Authorization;
 using Swallow.Models;
-using Swallow.Services;
+using Swallow.Services.Postgres;
 
 // Loading env files
 var root = Directory.GetCurrentDirectory();
@@ -28,24 +28,28 @@ builder.Services.Configure<SwallowDatabaseSettings>(
 builder.Services.AddControllers()
     .AddJsonOptions(options => options.JsonSerializerOptions.PropertyNamingPolicy = null);
 
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
+builder.Services.AddScoped<IUserService, UserService>();
+
 
 // Adding authentication 
-builder.Services.AddAuthentication(x =>
-{
-    x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-}).AddJwtBearer(x =>
-{
-    x.RequireHttpsMetadata = false;
-    x.SaveToken = true;
-    x.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
-    {
-        ValidateIssuerSigningKey = true,
-        ValidateIssuer = false,
-        ValidateAudience = false,
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(key))
-    };
-});
+// builder.Services.AddAuthentication(x =>
+// {
+//     x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+//     x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+// }).AddJwtBearer(x =>
+// {
+//     x.RequireHttpsMetadata = false;
+//     x.SaveToken = true;
+//     x.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+//     {
+//         ValidateIssuerSigningKey = true,
+//         ValidateIssuer = false,
+//         ValidateAudience = false,
+//         IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(key))
+//     };
+// });
 
 var MyAllowSpecificOrigin = "_myAllowSpecificOrigins";
 
@@ -60,13 +64,15 @@ builder.Services.AddDbContext<SwallowContext> ( optionsAction =>
 );
 
 //?
-builder.Services.AddSingleton<UserService>();
-builder.Services.AddSingleton<TokenBlacklistService>();
-builder.Services.AddSingleton<ProjectService>();
-builder.Services.AddSingleton<IssueService>();
+// builder.Services.AddSingleton<UserService>();
+// builder.Services.AddSingleton<TokenBlacklistService>();
+// builder.Services.AddSingleton<ProjectService>();
+// builder.Services.AddSingleton<IssueService>();
+
+// builder.Services.AddControllers();
 
 //Injecting the user service into auth
-builder.Services.AddSingleton<IJwtAuth>(serviceProvider => new Auth(key, serviceProvider.GetRequiredService<UserService>()));
+// builder.Services.AddSingleton<IJwtAuth>(serviceProvider => new Auth(key, serviceProvider.GetRequiredService<UserService>()));
 
 
 
@@ -89,11 +95,11 @@ app.UseHttpsRedirection();
 
 app.UseCors(MyAllowSpecificOrigin);
 
-app.UseAuthentication();
+// app.UseAuthentication();
 
-app.UseAuthorization();
+// app.UseAuthorization();
 
-app.UseMiddleware<JwtMiddleware>();
+// app.UseMiddleware<JwtMiddleware>();
 
 app.MapControllers();
 
