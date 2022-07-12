@@ -18,34 +18,34 @@ namespace Swallow.Authorization;
             this._tokenBlacklistService = tokenBlacklistService;
         }
 
-        public async Task Invoke(HttpContext context)
-        {
-            var token = context.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
+        // public async Task Invoke(HttpContext context)
+        // {
+        //     var token = context.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
 
-            bool doesExist = await _tokenBlacklistService.DoesTokenExistAsync(token);
+        //     bool doesExist = await _tokenBlacklistService.DoesTokenExistAsync(token);
 
-            if (!doesExist)
-            {
+        //     if (!doesExist)
+        //     {
 
-                var isValid = jwtAuth.Validate(token);
+        //         var isValid = jwtAuth.Validate(token);
 
-                if (isValid)
-                {
-                    var jwtToken = new JwtSecurityToken(token);
+        //         if (isValid)
+        //         {
+        //             var jwtToken = new JwtSecurityToken(token);
 
-                    var email = jwtToken.Claims.First(x => x.Type == "unique_name").Value;
+        //             var email = jwtToken.Claims.First(x => x.Type == "unique_name").Value;
 
-                    context.Items["User"] = email;
+        //             context.Items["User"] = email;
 
-                }
+        //         }
 
-                await _next(context);
+        //         await _next(context);
 
-                return;
-            }
+        //         return;
+        //     }
 
-            context.Response.StatusCode = (int) HttpStatusCode.Unauthorized;
+        //     context.Response.StatusCode = (int) HttpStatusCode.Unauthorized;
 
-        }
+        // }
         
     }
