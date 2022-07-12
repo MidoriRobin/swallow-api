@@ -12,8 +12,8 @@ using Swallow.Models;
 namespace Swallow.Migrations
 {
     [DbContext(typeof(SwallowContext))]
-    [Migration("20220707040830_firstmigration")]
-    partial class firstmigration
+    [Migration("20220711173600_initialmigration")]
+    partial class initialmigration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -26,8 +26,11 @@ namespace Swallow.Migrations
 
             modelBuilder.Entity("Swallow.Models.User", b =>
                 {
-                    b.Property<string>("Id")
-                        .HasColumnType("text");
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Email")
                         .IsRequired()
