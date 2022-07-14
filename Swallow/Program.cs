@@ -34,16 +34,6 @@ builder.Services.AddScoped<IUserService, UserService>();
 
 builder.Services.AddScoped<IJwtAuth, Auth>();
 
-// using ServiceProvider serviceProvider = builder.Services.BuildServiceProvider(validateScopes: true);
-// using (IServiceScope scope = serviceProvider.CreateScope())
-// {
-//     builder.Services.AddScoped<IJwtAuth>( _ => new Auth(key, scope.ServiceProvider.GetRequiredService<UserService>()));
-// }
-
-
-// builder.Services.AddScoped<IJwtAuth>( serviceProvider => new Auth(key, serviceProvider.GetRequiredService<UserService>()));
-
-
 // Adding authentication 
 builder.Services.AddAuthentication(x =>
 {
@@ -93,11 +83,11 @@ app.UseHttpsRedirection();
 
 app.UseCors(MyAllowSpecificOrigin);
 
-// app.UseAuthentication();
+app.UseAuthentication();
 
 app.UseAuthorization();
 
-// app.UseMiddleware<JwtMiddleware>();
+app.UseMiddleware<JwtMiddleware>();
 
 app.MapControllers();
 

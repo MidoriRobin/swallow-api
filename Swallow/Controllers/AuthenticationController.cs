@@ -65,29 +65,31 @@ public class AuthenticationController : ControllerBase
     // // }
 
 
-    // [HttpPost("logout")]
-    // public async Task<IActionResult> Logout()
-    // {
-    //     var currentUser = HttpContext.User;
+    [HttpPost("logout")]
+    public async Task<IActionResult> Logout()
+    {
+        var currentUser = HttpContext.User;
 
 
-    //     var claims = currentUser.Claims;
-    //     string userEmail = claims.ToArray()[0].Value;
+        var claims = currentUser.Claims;
+        string userEmail = claims.ToArray()[0].Value;
 
-
-    //     bool didReset = await _userService.ResetTokenDateAsync(userEmail);
+        string userId = claims.ToArray()[1].Value;
         
-    //     if (!didReset)
-    //         return NotFound();
-        
-    //     string token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
+        string token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
 
-    //     DateTime now = DateTime.UtcNow;
+        DateTime nullDate = DateTime.UnixEpoch;
 
-    //     await _tokenBlacklistService.CreateAsync(new TokenBlacklist(){Token = token, EntryDate = now, BelongsTo = userEmail});
+        User user = _userService.GetById(int.Parse(userId));
 
-    //     return NoContent();
-    // }
+        user.TokenExpiry = nullDate;
+
+        _userService.Update(user.Id, user);
+
+        // await _tokenBlacklistService.CreateAsync(new TokenBlacklist(){Token = token, EntryDate = now, BelongsTo = userEmail});
+
+        return NoContent();
+    }
 
 }
 

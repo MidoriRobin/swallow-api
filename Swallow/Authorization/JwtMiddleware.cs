@@ -1,51 +1,42 @@
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net;
+using Swallow.Models;
 using Swallow.Services;
 
 namespace Swallow.Authorization;
     public class JwtMiddleware
     {
         private readonly RequestDelegate _next;
-        private readonly IJwtAuth jwtAuth;
-        private readonly TokenBlacklistService _tokenBlacklistService;
         // private readonly 
 
-        public JwtMiddleware(RequestDelegate next, IJwtAuth jwtAuth, TokenBlacklistService tokenBlacklistService)
+        public JwtMiddleware(RequestDelegate next)
         {
             _next = next;
-            this.jwtAuth = jwtAuth;
-            this._tokenBlacklistService = tokenBlacklistService;
         }
 
-        // public async Task Invoke(HttpContext context)
-        // {
-        //     var token = context.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
+        public async Task Invoke(HttpContext context, IJwtAuth jwtAuth, SwallowContext swallowContext)
+        {
+            var token = context.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
 
-        //     bool doesExist = await _tokenBlacklistService.DoesTokenExistAsync(token);
+            var isValid = jwtAuth.Validate(token);
 
-        //     if (!doesExist)
-        //     {
+            if (isValid)
+            {
+                var jwtToken = new JwtSecurityToken(token);
 
-        //         var isValid = jwtAuth.Validate(token);
+                var email = jwtToken.Claims.First(x => x.Type == "unique_name").Value;
 
-        //         if (isValid)
-        //         {
-        //             var jwtToken = new JwtSecurityToken(token);
+                context.Items["User"] = email;
 
-        //             var email = jwtToken.Claims.First(x => x.Type == "unique_name").Value;
+                await _next(context);
 
-        //             context.Items["User"] = email;
+                return;
+            } else {
+                context.Response.StatusCode = (int) HttpStatusCode.Unauthorized;
 
-        //         }
+            }
 
-        //         await _next(context);
-
-        //         return;
-        //     }
-
-        //     context.Response.StatusCode = (int) HttpStatusCode.Unauthorized;
-
-        // }
+        }
         
     }

@@ -13,6 +13,7 @@ namespace Swallow.Services.Postgres;
         User GetById(int id);
         void Create(CreateRequest model);
         void Update(int id, UpdateRequest model);
+        void Update(int id, User user);
         void Delete(int id);
 
         User CredCheck(string email, string password);
@@ -79,6 +80,12 @@ namespace Swallow.Services.Postgres;
             _context.Users.Update(user);
             _context.SaveChanges();
 
+        }
+
+        public void Update(int id, User user)
+        {
+            _context.Users.Update(user);
+            _context.SaveChanges();
         }
 
         public void Delete(int id)

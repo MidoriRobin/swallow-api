@@ -25,8 +25,6 @@ namespace Swallow.Authorization;
         //TODO: build out service, test, refactor controller
         public string Authentication(User userInfo)
         {
-            
-            
 
             if(userInfo == null)
             {
@@ -39,7 +37,7 @@ namespace Swallow.Authorization;
             // 2. Create private key to encrypt
             var tokenKey = Encoding.ASCII.GetBytes(key);
 
-            // // 3. Create JWTdescriptor
+            // 3. Create JWTdescriptor
             var tokenDescriptor = new SecurityTokenDescriptor()
             {
                 Subject = new ClaimsIdentity(
@@ -54,39 +52,48 @@ namespace Swallow.Authorization;
                     new SymmetricSecurityKey(tokenKey), SecurityAlgorithms.HmacSha256Signature)
             };
 
-            // // 4. Create Token
+            // 4. Create Token
             var token = tokenHandler.CreateToken(tokenDescriptor);
 
-            DateTime now = DateTime.UtcNow;
+            DateTime nowPlusHour = DateTime.UtcNow.AddHours(1);
 
-            // userInfo.TokenExpiry = now;
+            userInfo.TokenExpiry = nowPlusHour;
 
-            // _userService.UpdateAsync(userInfo.Id, userInfo);
+            _context.Users.Update(userInfo);
+            _context.SaveChanges();
 
-            // // 5. Return Token from method
-            // return tokenHandler.WriteToken(token);
-            return "token";
+            // 5. Return Token from method
+            return tokenHandler.WriteToken(token);
+            // return token;
         }
 
         public bool Validate(string token)
         {
             var isValid = false;
-            // // TODO: Set to check if token is in a token blacklist and deny otherwise allow request
-            // if (token == null)
-            //     return false;
+            // TODO: Set to check if token is in a token blacklist and deny otherwise allow request
+            if (token == null)
+                return false;
             
-            // var jwtToken = new JwtSecurityTokenHandler().ReadJwtToken(token);
+            var jwtToken = new JwtSecurityTokenHandler().ReadJwtToken(token);
 
-            // var email = jwtToken.Claims.First(x => x.Type == "email").Value;
+            var email = jwtToken.Claims.First(x => x.Type == "email").Value;
 
-            // if (email == null)
-            // {
-            //     return false;
-            // }
-            // // Place holder code to be used until black list is implemented
-            // var isValid = _userService.GetByEmailAsync(email).Result.TokenExpiry.Equals(DateTime.UnixEpoch) ? false : true;
+            if (email == null)
+            {
+                return false;
+            }
+            // Place holder code to be used until black list is implemented
+            User userData = _context.Users.Where(x => x.Email == email).FirstOrDefault();
+            
+            if (userData != null)
+            {
+                isValid = userData.TokenExpiry.Equals(DateTime.UnixEpoch) ? false : true;
+                // Log that data was found for email given
+            }
+
 
             return isValid;
         }
+        
         
     }
