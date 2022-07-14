@@ -4,7 +4,8 @@ using Microsoft.AspNetCore.Mvc;
 using Swallow.Authorization;
 using Swallow.Models;
 using Swallow.Models.DTOs;
-using Swallow.Services;
+using Swallow.Models.Requests;
+using Swallow.Services.Postgres;
 
 namespace Swallow.Controllers;
 
@@ -14,17 +15,17 @@ namespace Swallow.Controllers;
 public class AuthenticationController : ControllerBase
 {
     
-    // private readonly IJwtAuth jwtAuth;
+    private readonly IJwtAuth _jwtAuth;
 
-    // public readonly UserService _userService;
+    private readonly IUserService _userService;
     // public readonly TokenBlacklistService _tokenBlacklistService;
 
-    // public AuthenticationController(IJwtAuth jwtAuth, UserService userService, TokenBlacklistService tokenBlacklistService)
-    // {
-    //     this.jwtAuth = jwtAuth;
-    //     _userService = userService;
-    //     _tokenBlacklistService = tokenBlacklistService;
-    // }
+    public AuthenticationController(IJwtAuth jwtAuth, IUserService userService /*,TokenBlacklistService tokenBlacklistService*/)
+    {
+        this._jwtAuth = jwtAuth;
+        _userService = userService;
+        // _tokenBlacklistService = tokenBlacklistService;
+    }
 
     // [HttpGet]
     // public async Task<List<User>> AllUsers() => await _userService.GetAsync();
@@ -42,17 +43,19 @@ public class AuthenticationController : ControllerBase
     //     return user; 
     // }
 
-    // [AllowAnonymous]
-    // [HttpPost("authenticate")]
-    // public IActionResult Authentication([FromBody]UserLoginDTO userCredentials)
-    // {
-    //     var token = jwtAuth.Authentication(userCredentials.Email, userCredentials.Password);
+    [AllowAnonymous]
+    [HttpPost("authenticate")]
+    public IActionResult Authentication([FromBody]LoginRequest userCred)
+    {
+        User? user = _userService.CredCheck(userCred.Email, userCred.Password);
+
+        var token = _userService.Authenticate(user);
         
-    //     if(token == null)
-    //         return Unauthorized("Invalid Credentials");
+        if(token == null)
+            return Unauthorized("Invalid Credentials");
         
-    //     return Ok(token);
-    // }
+        return Ok(token);
+    }
 
     // // [HttpPost("login")]
     // // public ActionResult Login()

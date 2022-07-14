@@ -32,24 +32,35 @@ builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 builder.Services.AddScoped<IUserService, UserService>();
 
+builder.Services.AddScoped<IJwtAuth, Auth>();
+
+// using ServiceProvider serviceProvider = builder.Services.BuildServiceProvider(validateScopes: true);
+// using (IServiceScope scope = serviceProvider.CreateScope())
+// {
+//     builder.Services.AddScoped<IJwtAuth>( _ => new Auth(key, scope.ServiceProvider.GetRequiredService<UserService>()));
+// }
+
+
+// builder.Services.AddScoped<IJwtAuth>( serviceProvider => new Auth(key, serviceProvider.GetRequiredService<UserService>()));
+
 
 // Adding authentication 
-// builder.Services.AddAuthentication(x =>
-// {
-//     x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-//     x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-// }).AddJwtBearer(x =>
-// {
-//     x.RequireHttpsMetadata = false;
-//     x.SaveToken = true;
-//     x.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
-//     {
-//         ValidateIssuerSigningKey = true,
-//         ValidateIssuer = false,
-//         ValidateAudience = false,
-//         IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(key))
-//     };
-// });
+builder.Services.AddAuthentication(x =>
+{
+    x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(x =>
+{
+    x.RequireHttpsMetadata = false;
+    x.SaveToken = true;
+    x.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+    {
+        ValidateIssuerSigningKey = true,
+        ValidateIssuer = false,
+        ValidateAudience = false,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(key))
+    };
+});
 
 var MyAllowSpecificOrigin = "_myAllowSpecificOrigins";
 
@@ -62,19 +73,6 @@ builder.Services.AddDbContext<SwallowContext> ( optionsAction =>
 
     optionsAction.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
 );
-
-//?
-// builder.Services.AddSingleton<UserService>();
-// builder.Services.AddSingleton<TokenBlacklistService>();
-// builder.Services.AddSingleton<ProjectService>();
-// builder.Services.AddSingleton<IssueService>();
-
-// builder.Services.AddControllers();
-
-//Injecting the user service into auth
-// builder.Services.AddSingleton<IJwtAuth>(serviceProvider => new Auth(key, serviceProvider.GetRequiredService<UserService>()));
-
-
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -97,7 +95,7 @@ app.UseCors(MyAllowSpecificOrigin);
 
 // app.UseAuthentication();
 
-// app.UseAuthorization();
+app.UseAuthorization();
 
 // app.UseMiddleware<JwtMiddleware>();
 

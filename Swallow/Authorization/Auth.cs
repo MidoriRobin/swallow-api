@@ -3,30 +3,32 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Swallow.Models;
-using Swallow.Services.Postgres;
 
 namespace Swallow.Authorization;
     public class Auth : IJwtAuth
     {
         private readonly string key;
+        private readonly SwallowContext _context;
 
-        private readonly UserService _userService;
+        // private readonly UserService _userService;
 
-        public Auth(string key, UserService userService)
+        public Auth(SwallowContext context)
         {
-            this.key = key;
-            this._userService = userService;
+            this.key = Environment.GetEnvironmentVariable("JWT__SECRET");
+            // this._userService = userService;
+            this._context = context;
         }
 
         //TODO: build out service, test, refactor controller
-        public string Authentication(string email, string password)
+        public string Authentication(User userInfo)
         {
             
-            User? user = _userService.CredCheck(email, password);
+            
 
-            if(user == null)
+            if(userInfo == null)
             {
                 return null;
             }
@@ -43,9 +45,9 @@ namespace Swallow.Authorization;
                 Subject = new ClaimsIdentity(
                     new Claim[]
                     {
-                        new Claim(ClaimTypes.Email, email),
-                        new Claim(ClaimTypes.Name, user.Id.ToString()),
-                        new Claim(ClaimTypes.Role, user.IsAdmin ? "admin" : "user")
+                        new Claim(ClaimTypes.Email, userInfo.Email),
+                        new Claim(ClaimTypes.Name, userInfo.Id.ToString()),
+                        new Claim(ClaimTypes.Role, userInfo.IsAdmin ? "admin" : "userInfo")
                     }),
                 Expires = DateTime.UtcNow.AddHours(1),
                 SigningCredentials = new SigningCredentials(
@@ -57,9 +59,9 @@ namespace Swallow.Authorization;
 
             DateTime now = DateTime.UtcNow;
 
-            // user.TokenExpiry = now;
+            // userInfo.TokenExpiry = now;
 
-            // _userService.UpdateAsync(user.Id, user);
+            // _userService.UpdateAsync(userInfo.Id, userInfo);
 
             // // 5. Return Token from method
             // return tokenHandler.WriteToken(token);

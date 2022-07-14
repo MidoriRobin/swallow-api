@@ -1,5 +1,6 @@
 using System;
 using AutoMapper;
+using Swallow.Authorization;
 using Swallow.Models;
 using Swallow.Models.Requests;
 // ! Why do i have to do this
@@ -13,6 +14,9 @@ namespace Swallow.Services.Postgres;
         void Create(CreateRequest model);
         void Update(int id, UpdateRequest model);
         void Delete(int id);
+
+        User CredCheck(string email, string password);
+        string Authenticate(User userData);
     }
     public class UserService : IUserService
     {
@@ -20,10 +24,13 @@ namespace Swallow.Services.Postgres;
 
         private readonly IMapper _mapper;
 
-        public UserService(SwallowContext context, IMapper mapper)
+        private readonly IJwtAuth _jwtAuth;
+
+        public UserService(SwallowContext context, IMapper mapper, IJwtAuth jwtAuth)
         {
             _context = context;
             _mapper = mapper;
+            _jwtAuth = jwtAuth;
         }
 
         public IEnumerable<User> GetAll()
@@ -44,10 +51,6 @@ namespace Swallow.Services.Postgres;
 
             // map model to new user object
             var user = _mapper.Map<User>(model);
-
-            Console.WriteLine("Printing model------------------");
-
-            Console.WriteLine(model.ToString());
 
             // hash password
             user.Password = BCryptNet.HashPassword(model.Password);
@@ -108,4 +111,13 @@ namespace Swallow.Services.Postgres;
             return returnedUser;
         }
     
+        public string Authenticate(User userData)
+        {
+            string token = null;
+
+            token = _jwtAuth.Authentication(userData);
+
+            return token;
+        }
+
     }
