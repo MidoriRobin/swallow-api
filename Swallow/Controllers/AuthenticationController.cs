@@ -1,5 +1,4 @@
 using System;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swallow.Authorization;
 using Swallow.Models;
@@ -91,5 +90,15 @@ public class AuthenticationController : ControllerBase
         return NoContent();
     }
 
+    [HttpGet("refresh")]
+    public async Task<IActionResult> RefreshToken()
+    {
+        
+        string newToken = "token";
+        var currentUser = HttpContext.User;
+
+
+        return Ok(new {token= newToken});
+    }
 }
 

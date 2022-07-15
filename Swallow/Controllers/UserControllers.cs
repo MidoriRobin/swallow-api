@@ -55,28 +55,16 @@ public class UserController : ControllerBase
     [HttpPost("register")]
     public IActionResult Register([FromForm] CreateRequest newUser)
     {
-
-        // Do I need to create an error object?
-
-        /* Dictionary<string, string> result = await _usersService.processRegistration(newUser);
-
-        if (!result["success"].Equals("True"))
+        try
         {
-            return BadRequest(result["reason"]);
+            _userService.Create(newUser);
+            
         }
-
-        var userDTO = new UserDTO()
+        catch (ApplicationException e)
         {
-            Id = newUser.Id,
-            Name = newUser.Name,
-            Username = newUser.Username,
-            Email = newUser.Email,
-            Occupation = newUser.Occupation
-        };
-
-        return CreatedAtAction(nameof(Get), new { id = newUser.Id }, userDTO); */
-
-         _userService.Create(newUser);
+            
+            return BadRequest(e.Message);
+        }
 
         return Ok(new { message = "User created" });
     }
