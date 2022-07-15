@@ -28,7 +28,7 @@ namespace Swallow.Models;
         // public int MemberId { get; set; }
         // public int GroupId { get; set; }
 
-        // public List<Issue> Issues { get; set; }
+        public List<Issue> Issues { get; set; }
         
     }
 

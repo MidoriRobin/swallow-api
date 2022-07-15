@@ -28,11 +28,11 @@ public class User
 
     // Constraints
 
-    // [InverseProperty("Assigned")]
-    // public List<Issue> AssignedIssues {get; set; }
+    [InverseProperty("Assigned")]
+    public List<Issue> AssignedIssues {get; set; }
 
-    // [InverseProperty("Created")]
-    // public List<Issue> CreatedIssues { get; set; }
+    [InverseProperty("Creator")]
+    public List<Issue> CreatedIssues { get; set; }
 
     public List<Project> Projects {get; set;}
 }
