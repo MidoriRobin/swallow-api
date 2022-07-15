@@ -8,7 +8,7 @@ namespace Swallow.Models
 {
     public class Issue
     {
-        public string? Id { get; set; }
+        public int Id { get; set; }
 
         public string Name { get; set; }
 
@@ -16,9 +16,15 @@ namespace Swallow.Models
 
         public string Status { get; set; }
         public string Description { get; set; }
-        public ObjectId? CreatorId { get; set; }
-        public ObjectId? AssignedId { get; set; }
-        public ObjectId? ProjectId { get; set; }
+        
+        public int CreatorUserId { get; set; }
+        public User Creator { get; set; }
+
+        public int AssignedUserId { get; set; }
+        public User Assigned { get; set; }
+
+        public int ProjectId { get; set; }
+        public Project Project { get; set; }
 
         public int Weight { get; set; }
 

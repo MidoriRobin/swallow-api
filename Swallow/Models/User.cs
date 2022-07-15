@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations.Schema;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
@@ -24,4 +25,14 @@ public class User
     public bool IsAdmin { get; set; }
 
     public DateTime? TokenExpiry { get; set; }
+
+    // Constraints
+
+    // [InverseProperty("Assigned")]
+    // public List<Issue> AssignedIssues {get; set; }
+
+    // [InverseProperty("Created")]
+    // public List<Issue> CreatedIssues { get; set; }
+
+    public List<Project> Projects {get; set;}
 }
