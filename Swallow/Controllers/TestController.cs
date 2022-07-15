@@ -3,22 +3,31 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Swallow.Authorization;
 //using Swallow.Models;
 
 namespace Swallow.Controllers;
 
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class TestController : ControllerBase
     {
         public TestController()
         {
         }
 
-        [HttpGet]
-        public ActionResult<IEnumerable<String>> GetTModels()
+        [HttpGet("testget")]
+        public ActionResult<IEnumerable<String>> GetTest()
         {
-            return Ok("Test Success");
+            return Ok("Authorize Test Success");
+        }
+
+        [AllowAnonymous]
+        [HttpGet("testget-anon")]
+        public ActionResult<IEnumerable<String>> GetTestAnon()
+        {
+            return Ok("Anon Test Success");
         }
 
         [HttpGet("{id}")]

@@ -67,6 +67,12 @@ namespace Swallow.Authorization;
             // return token;
         }
 
+        
+        /// <summary>
+        /// Checks if a token is not black listed and not expired
+        /// </summary>
+        /// <param name="token"></param>
+        /// <returns></returns>
         public bool Validate(string token)
         {
             var isValid = false;

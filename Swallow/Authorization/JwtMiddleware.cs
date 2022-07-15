@@ -1,6 +1,7 @@
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net;
+using System.Security.Claims;
 using Swallow.Models;
 using Swallow.Services;
 
@@ -25,17 +26,14 @@ namespace Swallow.Authorization;
             {
                 var jwtToken = new JwtSecurityToken(token);
 
-                var email = jwtToken.Claims.First(x => x.Type == "unique_name").Value;
+                var id = jwtToken.Claims.First(x => x.Type == ClaimTypes.Name).Value;
 
-                context.Items["User"] = email;
+                context.Items["User"] = swallowContext.Users.Find(id);
 
                 await _next(context);
-
                 return;
-            } else {
-                context.Response.StatusCode = (int) HttpStatusCode.Unauthorized;
-
             }
+            await _next(context);
 
         }
         
