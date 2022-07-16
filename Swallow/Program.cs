@@ -31,6 +31,7 @@ builder.Services.AddControllers()
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IProjectService, ProjectService>();
 
 builder.Services.AddScoped<IJwtAuth, Auth>();
 

@@ -23,6 +23,19 @@ namespace Swallow.Util;
                         return true;
                     }
                 ));
+            
+            CreateMap<CreateProjectReq, Project>();
+
+            CreateMap<UpdateProjectReq, Project>()
+                .ForAllMembers(x => x.Condition (
+                    (src, dest, prop) => 
+                    {
+                        if (prop is null) return false;
+                        if(prop.GetType() == typeof(string) && string.IsNullOrEmpty((string)prop)) return false;
+
+                        return true;
+                    }
+                ));
         }
         
     }

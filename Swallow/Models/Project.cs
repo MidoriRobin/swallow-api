@@ -23,7 +23,7 @@ namespace Swallow.Models;
 
         public DateTime CreatedDate { get; set; }
 
-        public DateTime? ExpectedEnd { get; set; }
+        public DateTime ExpectedEnd { get; set; }
 
         // public int MemberId { get; set; }
         // public int GroupId { get; set; }
