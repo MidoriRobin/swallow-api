@@ -17,10 +17,8 @@ namespace Swallow.Models
         public string Status { get; set; }
         public string Description { get; set; }
         
-        public int CreatorUserId { get; set; }
         public User Creator { get; set; }
 
-        public int AssignedUserId { get; set; }
         public User Assigned { get; set; }
 
         public int ProjectId { get; set; }
