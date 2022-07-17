@@ -37,6 +37,8 @@ namespace Swallow.Authorization;
             // 2. Create private key to encrypt
             var tokenKey = Encoding.ASCII.GetBytes(key);
 
+            var expiry = DateTime.UtcNow.AddHours(1);
+
             // 3. Create JWTdescriptor
             var tokenDescriptor = new SecurityTokenDescriptor()
             {
@@ -47,7 +49,7 @@ namespace Swallow.Authorization;
                         new Claim("id", userInfo.Id.ToString()),
                         new Claim(ClaimTypes.Role, userInfo.IsAdmin ? "admin" : "userInfo")
                     }),
-                Expires = DateTime.UtcNow.AddHours(1),
+                Expires = expiry,
                 SigningCredentials = new SigningCredentials(
                     new SymmetricSecurityKey(tokenKey), SecurityAlgorithms.HmacSha256Signature)
             };
@@ -55,9 +57,7 @@ namespace Swallow.Authorization;
             // 4. Create Token
             var token = tokenHandler.CreateToken(tokenDescriptor);
 
-            DateTime nowPlusHour = DateTime.UtcNow.AddHours(1);
-
-            userInfo.TokenExpiry = nowPlusHour;
+            userInfo.TokenExpiry = tokenDescriptor.Expires;
 
             _context.Users.Update(userInfo);
             _context.SaveChanges();
@@ -76,6 +76,7 @@ namespace Swallow.Authorization;
         public int? Validate(string token)
         {
             int userId;
+            DateTime expiry;
             // TODO: Set to check if token is in a token blacklist and deny otherwise allow request
 
             if (token == null)
@@ -95,16 +96,36 @@ namespace Swallow.Authorization;
                     ValidateAudience = false,
                 }, out SecurityToken validatedToken);
 
+
                 var jwtToken = (JwtSecurityToken)validatedToken;
                 userId = int.Parse(jwtToken.Claims.First(x => x.Type == "id").Value);
+
+
+                // Checks token expiry and throws an app exception if the token does not match current token timestamp in db
+                expiry = (DateTime)validatedToken.ValidTo;
+
+                DateTime userExpiry = (DateTime)_context.Users.Find(userId).TokenExpiry;
+
+                bool match = DateTime.Equals(expiry, Truncate(userExpiry, TimeSpan.TicksPerSecond));
+
+                if (!match)
+                {
+                    throw new ApplicationException("Token mismatch");
+                }
             }
             catch (System.Exception)
             {
                 
                 return null;
             }
+            
 
             return userId;
+        }
+
+        private DateTime Truncate(DateTime date, long resolution)
+        {
+            return new DateTime(date.Ticks - (date.Ticks % resolution), date.Kind);
         }
         
         

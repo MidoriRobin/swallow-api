@@ -63,8 +63,6 @@ public class AuthenticationController : ControllerBase
 
         _userService.invalidateToken(userId, token);
 
-        // await _tokenBlacklistService.CreateAsync(new TokenBlacklist(){Token = token, EntryDate = now, BelongsTo = userEmail});
-
         return NoContent();
     }
 

@@ -139,13 +139,13 @@ namespace Swallow.Services.Postgres;
             User user = getUser(int.Parse(userId));
 
             
-            TokenBlacklist blacklistedToken = new TokenBlacklist();
-            blacklistedToken.UserId = user.Id;
-            blacklistedToken.Token = token;
-            blacklistedToken.EntryDate = user.TokenExpiry;
+            // TokenBlacklist blacklistedToken = new TokenBlacklist();
+            // blacklistedToken.UserId = user.Id;
+            // blacklistedToken.Token = token;
+            // blacklistedToken.EntryDate = user.TokenExpiry;
 
             user.TokenExpiry = nullDate;
-            _context.TokenBlacklist.Add(blacklistedToken);
+            // _context.TokenBlacklist.Add(blacklistedToken);
             _context.Users.Update(user);
 
             _context.SaveChanges();
