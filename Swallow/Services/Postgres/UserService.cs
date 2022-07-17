@@ -18,6 +18,11 @@ namespace Swallow.Services.Postgres;
 
         User CredCheck(string email, string password);
         string Authenticate(User userData);
+
+        void invalidateToken(string userId, string token);
+
+        bool IsLoggedIn(int userId);
+
     }
     public class UserService : IUserService
     {
@@ -127,4 +132,27 @@ namespace Swallow.Services.Postgres;
             return token;
         }
 
+        public void invalidateToken(string userId, string token)
+        {
+            DateTime nullDate = DateTime.UnixEpoch;
+
+            User user = getUser(int.Parse(userId));
+
+            
+            TokenBlacklist blacklistedToken = new TokenBlacklist();
+            blacklistedToken.UserId = user.Id;
+            blacklistedToken.Token = token;
+            blacklistedToken.EntryDate = user.TokenExpiry;
+
+            user.TokenExpiry = nullDate;
+            _context.TokenBlacklist.Add(blacklistedToken);
+            _context.Users.Update(user);
+
+            _context.SaveChanges();
+        }
+
+        public bool IsLoggedIn(int userId)
+        {
+            return _context.Users.Find(userId).TokenExpiry != DateTime.UnixEpoch;
+        }
     }
