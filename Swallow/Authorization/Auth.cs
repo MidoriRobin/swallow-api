@@ -44,7 +44,7 @@ namespace Swallow.Authorization;
                     new Claim[]
                     {
                         new Claim(ClaimTypes.Email, userInfo.Email),
-                        new Claim(ClaimTypes.Name, userInfo.Id.ToString()),
+                        new Claim("id", userInfo.Id.ToString()),
                         new Claim(ClaimTypes.Role, userInfo.IsAdmin ? "admin" : "userInfo")
                     }),
                 Expires = DateTime.UtcNow.AddHours(1),
@@ -73,32 +73,38 @@ namespace Swallow.Authorization;
         /// </summary>
         /// <param name="token"></param>
         /// <returns></returns>
-        public bool Validate(string token)
+        public int? Validate(string token)
         {
-            var isValid = false;
+            int userId;
             // TODO: Set to check if token is in a token blacklist and deny otherwise allow request
+
             if (token == null)
-                return false;
+               return null;
             
-            var jwtToken = new JwtSecurityTokenHandler().ReadJwtToken(token);
 
-            var email = jwtToken.Claims.First(x => x.Type == "email").Value;
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var tokenKey = Encoding.ASCII.GetBytes(key);
 
-            if (email == null)
+            try
             {
-                return false;
+                tokenHandler.ValidateToken(token, new TokenValidationParameters 
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(tokenKey),
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
+                }, out SecurityToken validatedToken);
+
+                var jwtToken = (JwtSecurityToken)validatedToken;
+                userId = int.Parse(jwtToken.Claims.First(x => x.Type == "id").Value);
             }
-            // Place holder code to be used until black list is implemented
-            User userData = _context.Users.Where(x => x.Email == email).FirstOrDefault();
-            
-            if (userData != null)
+            catch (System.Exception)
             {
-                isValid = userData.TokenExpiry.Equals(DateTime.UnixEpoch) ? false : true;
-                // Log that data was found for email given
+                
+                return null;
             }
 
-
-            return isValid;
+            return userId;
         }
         
         

@@ -20,15 +20,19 @@ namespace Swallow.Authorization;
         {
             var token = context.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
 
-            var isValid = jwtAuth.Validate(token);
+            var isTokenBlacklisted = swallowContext.TokenBlacklist.Where(x => x.Token == token).FirstOrDefault();
 
-            if (isValid)
+            if (isTokenBlacklisted is not null)
             {
-                var jwtToken = new JwtSecurityToken(token);
+                await _next(context);
+                return;
+            }
 
-                var id = jwtToken.Claims.First(x => x.Type == ClaimTypes.Name).Value;
+            var userId = jwtAuth.Validate(token);
 
-                context.Items["User"] = swallowContext.Users.Find(id);
+            if (userId is not null)
+            {
+                context.Items["User"] = swallowContext.Users.Find(userId);
 
                 await _next(context);
                 return;

@@ -8,12 +8,8 @@ namespace Swallow.Models;
         public SwallowContext() { }
         public SwallowContext(DbContextOptions<SwallowContext> options) : base (options) { }
 
-        // protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        // {
-        //     optionsBuilder.UseSqlServer("Server=(localdb)\\MSSQLLocalDB;Initial Catalog=DBName;Integrated Security=True");
-        // }
-
         public DbSet<User> Users { get; set; }
         public DbSet<Project> Projects { get; set; }
         public DbSet<Issue> Issues { get; set; }
+        public DbSet<TokenBlacklist> TokenBlacklist { get; set; }
     }
