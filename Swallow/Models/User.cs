@@ -35,4 +35,6 @@ public class User
     public List<Issue> CreatedIssues { get; set; }
 
     public List<Project> Projects {get; set;}
+
+    public TokenBlacklist Token { get; set; }
 }
