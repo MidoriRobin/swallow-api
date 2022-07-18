@@ -36,5 +36,10 @@ public class User
 
     public List<Project> Projects {get; set;}
 
-    public TokenBlacklist Token { get; set; }
+    public List<RefreshToken> RefreshTokens { get; set; }
+
+    public bool OwnsToken(string token)
+    {
+        return this.RefreshTokens?.Find(x => x.Token == token) != null;
+    }
 }
