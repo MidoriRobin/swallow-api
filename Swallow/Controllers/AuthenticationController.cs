@@ -38,15 +38,30 @@ public class AuthenticationController : ControllerBase
         if (isLoggedIn)
             return Unauthorized("User is already logged in");
         
-       
-        var token = _userService.Authenticate(user);
+        // Creating jwt token
 
-        if(token == null)
+        // var token = _userService.Authenticate(user, ipAddress());
+
+        var authResponse = _jwtAuth.Authentication(user, ipAddress());
+
+        if(authResponse == null)
             return Unauthorized("Invalid Credentials");
+
+        setTokenCookie(authResponse.RefreshToken);
         
-        return Ok(token);
+        
+        // Return refresh token as well
+
+        return Ok(authResponse);
     }
 
+    private string ipAddress()
+    {
+        if (Request.Headers.ContainsKey("X-Forwarded-For"))
+            return Request.Headers["X-Forwarded-For"];
+        else
+            return HttpContext.Connection.RemoteIpAddress.MapToIPv4().ToString();
+    }
 
     [HttpPost("logout")]
     public async Task<IActionResult> Logout()
@@ -61,7 +76,10 @@ public class AuthenticationController : ControllerBase
         
         string token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
 
+        var refreshToken = Request.Cookies["refreshToken"];
+
         _userService.invalidateToken(userId, token);
+        // _userService.RevokeToken(token, ipAddress());
 
         return NoContent();
     }
@@ -75,6 +93,15 @@ public class AuthenticationController : ControllerBase
 
 
         return Ok(new {token= newToken});
+    }
+
+    private void setTokenCookie(string token)
+    {
+        var cookieOptions = new CookieOptions
+        {
+            HttpOnly = true,
+            Expires = DateTime.UtcNow.AddDays(3)
+        };
     }
 }
 
