@@ -3,6 +3,7 @@ using AutoMapper;
 using Swallow.Authorization;
 using Swallow.Models;
 using Swallow.Models.Requests;
+using Swallow.Util;
 // ! Why do i have to do this
 using BCryptNet = BCrypt.Net.BCrypt;
 
@@ -22,6 +23,8 @@ namespace Swallow.Services.Postgres;
         void invalidateToken(string userId, string token);
 
         bool IsLoggedIn(int userId);
+
+        void RevokeToken(string token, string ipAddress);
 
     }
     public class UserService : IUserService
@@ -127,7 +130,7 @@ namespace Swallow.Services.Postgres;
         {
             string token = null;
 
-            token = _jwtAuth.Authentication(userData);
+            // token = _jwtAuth.Authentication(userData);
 
             return token;
         }
@@ -149,6 +152,33 @@ namespace Swallow.Services.Postgres;
             _context.Users.Update(user);
 
             _context.SaveChanges();
+        }
+
+        public void RevokeToken(string token, string ipAddress)
+        {
+            var user = getAccountByRefreshToken(token);
+            var refreshToken = user.RefreshTokens.Single(x => x.Token == token);
+
+            if (!refreshToken.IsActive)
+                throw new AppException("Invalid token");
+            
+            revokeRefreshToken(refreshToken, ipAddress);
+
+            _context.Update(user);
+            _context.SaveChanges();
+        }
+
+        private User getAccountByRefreshToken(string token)
+        {
+            var user = _context.Users.SingleOrDefault(x => x.RefreshTokens.Any(t => t.Token == token));
+            if (user == null) throw new AppException("Invalid token");
+            return user;
+        }
+
+        private void revokeRefreshToken(RefreshToken refreshToken, string ipAddress)
+        {
+            refreshToken.Revoked = DateTime.UtcNow;
+            refreshToken.RevokedByIp = ipAddress;
         }
 
         public bool IsLoggedIn(int userId)

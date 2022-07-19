@@ -1,11 +1,12 @@
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.Extensions.Options;
+using AutoMapper;
 using Microsoft.IdentityModel.Tokens;
 using Swallow.Models;
+using Swallow.Models.Responses;
 
 namespace Swallow.Authorization;
     public class Auth : IJwtAuth
@@ -13,17 +14,20 @@ namespace Swallow.Authorization;
         private readonly string key;
         private readonly SwallowContext _context;
 
+        private readonly IMapper _mapper;
+
         // private readonly UserService _userService;
 
-        public Auth(SwallowContext context)
+        public Auth(SwallowContext context, IMapper mapper)
         {
             this.key = Environment.GetEnvironmentVariable("JWT__SECRET");
             // this._userService = userService;
             this._context = context;
+            this._mapper = mapper;
         }
 
         //TODO: build out service, test, refactor controller
-        public string Authentication(User userInfo)
+        public AuthenticateResponse Authentication(User userInfo, string ipAddress)
         {
 
             if(userInfo == null)
@@ -57,14 +61,27 @@ namespace Swallow.Authorization;
             // 4. Create Token
             var token = tokenHandler.CreateToken(tokenDescriptor);
 
+            // Create refresh
+            var refreshToken = GenerateRefreshToken(ipAddress);
+
             userInfo.TokenExpiry = tokenDescriptor.Expires;
+
+            userInfo.RefreshTokens.Add(refreshToken);
+            
+            removeOldRefreshTokens(userInfo);
 
             _context.Users.Update(userInfo);
             _context.SaveChanges();
+            
+            var response = _mapper.Map<AuthenticateResponse>(userInfo);
 
-            // 5. Return Token from method
-            return tokenHandler.WriteToken(token);
-            // return token;
+            response.JwtToken = tokenHandler.WriteToken(token);
+            response.RefreshToken = refreshToken.Token;
+
+
+
+            // 5. Return Response
+            return response;
         }
 
         
@@ -123,10 +140,37 @@ namespace Swallow.Authorization;
             return userId;
         }
 
+        public void RevokeRefreshToken(string token)
+        {
+
+        }
+
+        public RefreshToken GenerateRefreshToken(string ipAddress)
+        {
+            RefreshToken refreshToken = new RefreshToken 
+            {
+                Token = Convert.ToHexString(RandomNumberGenerator.GetBytes(64)),
+                Expires = DateTime.UtcNow.AddHours(7),
+                Created = DateTime.UtcNow,
+                CreatedByIp = ipAddress
+            };
+
+            var tokenIsUnique = !_context.Users.Any(u => u.RefreshTokens.Any(t => t.Token == refreshToken.Token));
+
+            if(!tokenIsUnique)
+                return GenerateRefreshToken(ipAddress);
+
+            return refreshToken;
+        }
+
+        private void removeOldRefreshTokens(User user)
+        {
+            user.RefreshTokens.RemoveAll(x => !x.IsActive && x.Created.AddDays(3) <= DateTime.UtcNow);
+        }
+
         private DateTime Truncate(DateTime date, long resolution)
         {
             return new DateTime(date.Ticks - (date.Ticks % resolution), date.Kind);
         }
-        
-        
+
     }
