@@ -2,12 +2,15 @@ using System;
 using AutoMapper;
 using Swallow.Models;
 using Swallow.Models.Requests;
+using Swallow.Models.Responses;
 
 namespace Swallow.Util;
     public class AutoMapperProfile : Profile
     {
         public AutoMapperProfile()
         {
+            CreateMap<User, AuthenticateResponse>();
+
             // CreateRequest -> User
             CreateMap<CreateRequest, User>();
 
