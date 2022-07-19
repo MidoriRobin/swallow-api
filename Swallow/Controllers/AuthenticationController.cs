@@ -79,6 +79,7 @@ public class AuthenticationController : ControllerBase
         var refreshToken = Request.Cookies["refreshToken"];
 
         _userService.invalidateToken(userId, token);
+        // _userService.RevokeToken(token, ipAddress());
 
         // TODO: uncomment when connecting front and backend to check for cookies
         // _userService.RevokeToken(token, ipAddress());
