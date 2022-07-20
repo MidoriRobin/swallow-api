@@ -9,6 +9,7 @@ namespace Swallow.Util;
     {
         public AutoMapperProfile()
         {
+            CreateMap<Project, ProjectResponse>();
             CreateMap<User, AuthenticateResponse>();
 
             // CreateRequest -> User

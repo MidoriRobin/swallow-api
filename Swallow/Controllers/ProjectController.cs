@@ -1,18 +1,14 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
+using Swallow.Authorization;
 using Swallow.Models;
 using Swallow.Models.Requests;
-using Swallow.Services;
+using Swallow.Models.Responses;
 using Swallow.Services.Postgres;
 
 namespace Swallow.Controllers;
 
-    // [Authorize]
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class ProjectController : ControllerBase
@@ -23,11 +19,26 @@ namespace Swallow.Controllers;
         public ProjectController(IProjectService projectService) => _projectService = projectService;
         
 
+        [Authorize("admin")]
         [HttpGet]
-        public IActionResult Get()
+        public IActionResult GetAll()
         {
 
             var projects = _projectService.GetAll();
+
+            if(projects is null)
+            {
+                return NotFound();
+            }
+
+            return Ok(projects);
+        }
+
+        [HttpGet("user/{userId}")]
+        public IActionResult GetAllByUser(int userid)
+        {
+
+            var projects = _projectService.GetAllByUser(userid);
 
             if(projects is null)
             {
@@ -41,7 +52,7 @@ namespace Swallow.Controllers;
         public IActionResult GetById(int id)
         {
 
-            Project project;
+            ProjectResponse project;
 
             try
             {
@@ -62,9 +73,11 @@ namespace Swallow.Controllers;
         public IActionResult Post([FromForm] CreateProjectReq newProject)
         {
 
+            ProjectResponse createdProject;
+
             try
             {
-                _projectService.Create(newProject);
+                createdProject = _projectService.Create(newProject);
             }
             catch (System.Exception)
             {
@@ -72,7 +85,10 @@ namespace Swallow.Controllers;
                 return BadRequest("There was an issue making the project");
             }
 
-            return CreatedAtAction(nameof(Get), new { message = "Project Created"}, newProject);
+            var actionName = nameof(GetById);
+            var routeValues = new { id = createdProject.Id };
+
+            return CreatedAtAction(actionName, routeValues, createdProject);
         }
 
 

@@ -2,9 +2,9 @@ using Swallow.Models;
 using Swallow.Services;
 using Microsoft.AspNetCore.Mvc;
 using Swallow.Models.DTOs;
-using Microsoft.AspNetCore.Authorization;
 using Swallow.Models.Requests;
 using Swallow.Services.Postgres;
+using Swallow.Authorization;
 
 namespace Swallow.Controllers;
 
@@ -19,12 +19,12 @@ public class UserController : ControllerBase
 
     public UserController(IUserService userService) => _userService = userService;
 
-    [Authorize(Roles ="admin")]
+    [Authorize("admin")]
     [HttpGet]
     public List<User> Get() => _userService.GetAll().ToList();
 
 
-    // [Authorize(Roles ="admin")]
+    // [Authorize("admin")]
     // [HttpGet("{id:length(24)}")]
     // public async Task<ActionResult<User>> Get(string id)
     // {
@@ -38,15 +38,25 @@ public class UserController : ControllerBase
     //     return user;
     // }
 
-    // [Authorize(Roles ="admin")]
-    // [HttpPost]
-    // public async Task<IActionResult> Post(User newUser)
-    // {
-    //     await _usersService.CreateAsync(newUser);
+    [Authorize("admin")]
+    [HttpPost]
+    public async Task<IActionResult> Post(CreateRequest newUser)
+    {
+        try
+        {
+            _userService.Create(newUser);
+            
+        }
+        catch (System.Exception)
+        {
+            
+            throw;
+        }
 
-    //     // ? Seek to understand this a bit better
-    //     return CreatedAtAction(nameof(Get), new { id = newUser.Id }, newUser);
-    // }
+        // ? Seek to understand this a bit better
+        // return CreatedAtAction(nameof(Get), new { id = newUser.Id }, newUser);
+        return Ok(new { message = "User created" });
+    }
 
 
 
@@ -55,6 +65,7 @@ public class UserController : ControllerBase
     [HttpPost("register")]
     public IActionResult Register([FromForm] CreateRequest newUser)
     {
+        newUser.IsAdmin = "false";
         try
         {
             _userService.Create(newUser);

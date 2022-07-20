@@ -2,14 +2,16 @@ using System;
 using AutoMapper;
 using Swallow.Models;
 using Swallow.Models.Requests;
+using Swallow.Models.Responses;
 
 namespace Swallow.Services.Postgres;
 
     public interface IProjectService
     {
-        IEnumerable<Project> GetAll();
-        Project GetById(int id);
-        void Create(CreateProjectReq model);
+        IEnumerable<ProjectResponse> GetAll();
+        IEnumerable<ProjectResponse> GetAllByUser(int userId);
+        ProjectResponse GetById(int id);
+        ProjectResponse Create(CreateProjectReq model);
         void Update(int id, UpdateProjectReq model);
         void Delete(int id);
     }
@@ -26,18 +28,29 @@ namespace Swallow.Services.Postgres;
             _mapper = mapper;
         }
 
-        public IEnumerable<Project> GetAll()
+        public IEnumerable<ProjectResponse> GetAll()
         {
-            return _context.Projects;
+            var responseList = _mapper.Map<IList<ProjectResponse>>(_context.Projects);
+            
+            return responseList;
         }
 
-        public Project GetById(int id)
+        public IEnumerable<ProjectResponse> GetAllByUser(int userId)
         {
-            return getProject(id);
+            var projectList = _context.Projects.Where(x => x.CreatorId == userId);
+
+            var responseList = _mapper.Map<IList<ProjectResponse>>(projectList);
+
+            return responseList;
+        }
+
+        public ProjectResponse GetById(int id)
+        {
+            return _mapper.Map<ProjectResponse>(getProject(id));
             
         }
 
-        public void Create(CreateProjectReq model)
+        public ProjectResponse Create(CreateProjectReq model)
         {
             
             var project = _mapper.Map<Project>(model);
@@ -46,7 +59,10 @@ namespace Swallow.Services.Postgres;
 
             _context.Projects.Add(project);
             _context.SaveChanges();
+            
+            var projectResponse = _mapper.Map<ProjectResponse>(project);
 
+            return projectResponse;
         }
 
         public void Update(int id, UpdateProjectReq model)
