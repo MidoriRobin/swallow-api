@@ -8,11 +8,11 @@ namespace Swallow.Authorization;
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
     public class AuthorizeAttribute : Attribute, IAuthorizationFilter
     {
-        // private readonly IList<Role> _roles;
+        private readonly IList<string> _roles;
 
-        public AuthorizeAttribute()
+        public AuthorizeAttribute(params string[] roles)
         {
-
+            _roles = roles ?? new string[] {};
         }
 
         public void OnAuthorization(AuthorizationFilterContext context)
@@ -25,7 +25,7 @@ namespace Swallow.Authorization;
             
             var user = (User)context.HttpContext.Items["User"];
 
-            if (user == null)
+            if (user == null || (_roles.Any() && _roles.Contains("admin") && !user.IsAdmin))
             {
                 context.Result = new JsonResult( new { message = "Unauthorized" }) { StatusCode = StatusCodes.Status401Unauthorized };
             }

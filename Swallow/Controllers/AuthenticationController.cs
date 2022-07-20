@@ -33,6 +33,9 @@ public class AuthenticationController : ControllerBase
         
         User? user = _userService.CredCheck(userCred.Email, userCred.Password);
         
+        if (user is null)
+            return Unauthorized("Invalid credentials");
+
         var isLoggedIn = _userService.IsLoggedIn(user.Id);
         
         if (isLoggedIn)
