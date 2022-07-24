@@ -23,6 +23,13 @@ namespace Swallow.Controllers;
             return Ok("Authorize Test Success");
         }
 
+        [Authorize("admin")]
+        [HttpGet("testget-role")]
+        public ActionResult<IEnumerable<String>> GetTestAdmin()
+        {
+            return Ok("Admin Test Success");
+        }
+
         [AllowAnonymous]
         [HttpGet("testget-anon")]
         public ActionResult<IEnumerable<String>> GetTestAnon()

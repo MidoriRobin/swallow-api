@@ -183,6 +183,16 @@ namespace Swallow.Services.Postgres;
 
         public bool IsLoggedIn(int userId)
         {
-            return _context.Users.Find(userId).TokenExpiry != DateTime.UnixEpoch;
+            // Time is stored in utc so use ToLocalTime
+            
+            DateTime expiry = _context.Users.Find(userId).TokenExpiry.Value.ToLocalTime();
+            bool isOldDate = DateTime.Now.Subtract(expiry).Hours >= 1 || DateTime.Now.Subtract(expiry).Minutes >= 1;
+
+            if (expiry == DateTime.UnixEpoch || isOldDate)
+            {
+                return false;
+            }
+
+            return true;
         }
     }
