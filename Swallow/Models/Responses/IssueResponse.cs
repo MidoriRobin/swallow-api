@@ -1,9 +1,11 @@
 using System;
 
-namespace Swallow.Models.Requests
+namespace Swallow.Models.Responses
 {
-    public class CreateIssueReq
+    public class IssueResponse
     {
+        public int Id { get; set; }
+
         public string Name { get; set; }
 
         public string Type { get; set; }

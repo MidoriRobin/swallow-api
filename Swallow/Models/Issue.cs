@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel.DataAnnotations.Schema;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using Newtonsoft.Json;
@@ -17,16 +18,23 @@ namespace Swallow.Models
         public string Status { get; set; }
         public string Description { get; set; }
         
+        public int CreatorId { get; set; }
+        [ForeignKey("CreatorId")]
         public User Creator { get; set; }
 
+        public int AssignedId { get; set; }
+        [ForeignKey("AssignedId")]
         public User Assigned { get; set; }
 
         public int ProjectId { get; set; }
+
         public Project Project { get; set; }
 
         public int Weight { get; set; }
 
         public DateTime CreatedDate { get; set; }
+
+        public DateTime DueDate { get; set; }
 
         public DateTime CompletedDate { get; set; }
 

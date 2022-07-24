@@ -9,8 +9,23 @@ namespace Swallow.Util;
     {
         public AutoMapperProfile()
         {
+            CreateMap<Issue, IssueResponse>();
+            CreateMap<CreateIssueReq, Issue>();
+
+            CreateMap<UpdateIssueReq, Issue>().ForAllMembers(x => x.Condition (
+                (src, dest, prop) =>
+                {
+
+                    if (prop == null) return false;
+                    if (prop.GetType() == typeof(string) && string.IsNullOrEmpty((string)prop)) return false;
+
+                    return true;
+                }
+            ));
+
             CreateMap<Project, ProjectResponse>();
             CreateMap<User, AuthenticateResponse>();
+
 
             // CreateRequest -> User
             CreateMap<CreateRequest, User>();

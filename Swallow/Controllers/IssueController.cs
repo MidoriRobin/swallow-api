@@ -1,10 +1,11 @@
 using System;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson;
+using Swallow.Authorization;
 using Swallow.Models;
-using Swallow.Models.DTOs;
-using Swallow.Services;
+using Swallow.Models.Requests;
+using Swallow.Models.Responses;
+using Swallow.Services.Postgres;
 
 namespace Swallow.Controllers;
 
@@ -13,82 +14,103 @@ namespace Swallow.Controllers;
     [Route("api/[controller]")]
     public class IssueController : ControllerBase
     {
-        // private readonly IssueService _issueService;
+        // TODO: Test all routes
+        private IIssueService _issueService;
         // private readonly ProjectService _projectService;
 
-        // public IssueController(IssueService issueService, ProjectService projectService)
-        // {
-        //     _issueService = issueService;
-        //     _projectService = projectService;
-        // }
+        public IssueController(IIssueService issueService)
+        {
+            _issueService = issueService;
+        }
 
 
-        // [Authorize(Roles ="admin")]
-        // [HttpGet]
-        // public async Task<List<Issue>> Get()
-        // {
-        //     return await _issueService.GetIssuesAsync();
-        // }
-
-        // [Authorize(Roles ="admin")]
-        // [HttpGet("{id:length(24)}")]
-        // public async Task<ActionResult<Issue>> GetIssueById(string id)
-        // {
-        //     var issue = await _issueService.GetIssueAsync(id);
-
-        //     if (issue is null)
-        //     {
-        //         return NotFound();
-        //     }
-
-        //     return issue;
-        // }
-
-        // [HttpPost]
-        // public async Task<IActionResult> Post([FromBody]IssuesDTO newIssueItem)
-        // {
-
-        //     Console.WriteLine(newIssueItem);
-        //     Issue newIssue = newIssueItem.ConvertToIssue();
-
-        //     // var issues = await _issueService.GetIssuesAsync();
-        //     await _issueService.CreateAsync(newIssue);
-
-        //     return CreatedAtAction(nameof(Get), new { id = newIssue.Id }, newIssueItem);
-        // }
+        // [Authorize("admin")]
+        [AllowAnonymous]
+        [HttpGet]
+        public ActionResult<IssueResponse> GetAll()
+        {
+            return Ok(_issueService.GetAll());
+        }
 
         // [Authorize(Roles ="admin")]
-        // [HttpPut("update/{id:length(24)}")]
-        // public async Task<IActionResult> Put(string id, Issue updatedIssue)
-        // {
+        [AllowAnonymous]
+        [HttpGet("{id}")]
+        public IActionResult GetById(int id)
+        {
+            IssueResponse issue;
 
-        //     var issue = await _issueService.GetIssueAsync(id);
+            try
+            {
+                issue = _issueService.GetById(id);
+                
+            }
+            catch (System.Exception)
+            {
+                
+                return NotFound();
+            }
 
-        //     if (issue is null)
-        //     {
-        //         return NotFound();
-        //     }
+            return Ok(issue);
+        }
 
-        //     await _issueService.UpdateAsync(id, updatedIssue);
+        [HttpPost]
+        public IActionResult Create([FromBody]CreateIssueReq newIssueItem)
+        {
+            IssueResponse createdIssue;
 
-        //     return NoContent();
-        // }
+            try
+            {
+                createdIssue = _issueService.Create(newIssueItem);
+            }
+            catch (System.Exception)
+            {
+                
+                return BadRequest();
+            }
+
+            // var issues = await _issueService.GetIssuesAsync();
+
+            var actionName = nameof(GetById);
+            var routeValues = new { id = createdIssue.Id };
+
+            return CreatedAtAction(actionName, routeValues, createdIssue);
+        }
 
         // [Authorize(Roles ="admin")]
-        // [HttpDelete("delete/{id:length(24)}")]
-        // public async Task<IActionResult> Delete(string id)
-        // {
-        //     var issue = await _issueService.GetIssueAsync(id);
+        [HttpPut("{id:length(24)}")]
+        public IActionResult Put(int id, UpdateIssueReq updatedIssue)
+        {
 
-        //     if (issue is null)
-        //     {
-        //         return NotFound();
-        //     }
+            try
+            {
+                _issueService.Update(id, updatedIssue);
+                
+            }
+            catch (System.Exception)
+            {
+                return BadRequest("Unable to update project");
+            }
 
-        //     await _issueService.RemoveAsync(id);
+            return NoContent();
+        }
 
-        //     return NoContent();
-        // }
+        // [Authorize(Roles ="admin")]
+        [HttpDelete("delete/{id:length(24)}")]
+        public IActionResult Delete(int id)
+        {
+            try
+            {
+                _issueService.Delete(id);
+                
+            }
+            catch (System.Exception)
+            {
+                
+                return NotFound();
+            }
+
+            return NoContent();
+        }
 
         // // User role methods
 
