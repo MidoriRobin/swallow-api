@@ -1,35 +1,126 @@
 using System;
 
-namespace Swallow.Models.Requests
-{
+namespace Swallow.Models.Requests;
+
     public class UpdateIssueReq
     {
-        public int Id { get; set; }
+        // For dates, the string formats are expected to be in YYYY/MM/dd (probably more but I havent checked yet)
 
-        public string Name { get; set; }
+        private string _name;
+        private string _type;
+        private string _status;
+        private string _description;
+        private int? _assignedId;
+        private int? _weight;
+        private string _dueDate;
+        private string _completedDate;
+        private int? _timeTaken;
+        private int? _sprint;
 
-        public string Type { get; set; }
+        // Getters/Setters
+        public string? Name 
+        { 
+            get => _name; 
+            set => _name = replaceEmptyWithNull(value); 
+        }
 
-        public string Status { get; set; }
-        public string Description { get; set; }
-        
-        public User Creator { get; set; }
+        public string? Type 
+        { 
+            get => _type; 
+            set => _type = replaceEmptyWithNull(value);        
+        }
 
-        public User Assigned { get; set; }
+        public string? Status 
+        { 
+            get => _status; 
+            set => _status = replaceEmptyWithNull(value);        
+        }
+        public string? Description 
+        { 
+            get => _description; 
+            set => _description = replaceEmptyWithNull(value);        
+        }
 
-        public int ProjectId { get; set; }
-        public Project Project { get; set; }
+        public int? AssignedId
+        { 
+            get => _assignedId; 
+            set => _assignedId = value;
+        }
 
-        public int Weight { get; set; }
+        public int? Weight 
+        { 
+            get => _weight; 
+            set => _weight = value;        
+        }
 
-        public DateTime CreatedDate { get; set; }
+        public string? DueDate 
+        { 
+            get => _dueDate; 
+            set => _dueDate = replaceEmptyWithNull(value);        
+        }
 
-        public DateTime DueDate { get; set; }
+        public string? CompletedDate 
+        { 
+            get => _completedDate;
+            set => _completedDate = replaceEmptyWithNull(value);
+        }
 
-        public DateTime CompletedDate { get; set; }
+        public int? TimeTaken 
+        { 
+            get => _timeTaken; 
+            set => _timeTaken = value;
+        }
 
-        public int TimeTaken { get; set; }
+        public int? Sprint 
+        { 
+            get => _sprint; 
+            set => _sprint = value;
+        }
 
-        public int Sprint { get; set; }
+
+        private string replaceEmptyWithNull(string value)
+        {
+            // replace empty string with null to make field optional
+            return string.IsNullOrEmpty(value) ? null : value;
+        }
+
+        private int? replaceZeroWithNull(int value)
+        {
+            // replace empty string with null to make field optional
+            return value == 0 ? null : value;
+        }
+
+        private DateTime? stringToDate(string dateString) 
+        {
+
+            if (string.IsNullOrEmpty(dateString)) return null;
+
+            if (isValidDateString(dateString))
+            {
+                
+            }
+            DateTime date = new DateTime(int.Parse(dateString.Split("/")[0]), int.Parse(dateString.Split("/")[1]), int.Parse(dateString.Split("/")[2]));
+
+            return date;
+        }
+
+        private bool isValidDateString(string dateString)
+        {
+            bool isValid = true;
+
+            if(dateString.Contains("/"))
+            {
+                isValid = dateString.Split("/").Length != 3 ? false : true;
+
+            } else if (dateString.Contains("-"))
+            {
+                isValid = dateString.Split("-").Length != 3 ? false : true;
+            } else 
+            {
+                isValid = false;
+            }
+
+            return isValid;
+        }
     }
-}
+
