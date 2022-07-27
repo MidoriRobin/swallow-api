@@ -77,8 +77,9 @@ namespace Swallow.Controllers;
         }
 
         // [Authorize(Roles ="admin")]
-        [HttpPut("{id:length(24)}")]
-        public IActionResult Put(int id, UpdateIssueReq updatedIssue)
+        [AllowAnonymous]
+        [HttpPut("{id}")]
+        public IActionResult Update(int id, UpdateIssueReq updatedIssue)
         {
 
             try
