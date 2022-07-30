@@ -12,8 +12,8 @@ namespace Swallow.Models.Requests;
         private string _description;
         private int? _assignedId;
         private int? _weight;
-        private string _dueDate;
-        private string _completedDate;
+        private DateTime? _dueDate;
+        private DateTime? _completedDate;
         private int? _timeTaken;
         private int? _sprint;
 
@@ -53,16 +53,16 @@ namespace Swallow.Models.Requests;
             set => _weight = value;        
         }
 
-        public string? DueDate 
+        public DateTime? DueDate 
         { 
             get => _dueDate; 
-            set => _dueDate = replaceEmptyWithNull(value);        
+            set => _dueDate = value;        
         }
 
-        public string? CompletedDate 
+        public DateTime? CompletedDate 
         { 
             get => _completedDate;
-            set => _completedDate = replaceEmptyWithNull(value);
+            set => _completedDate = value;
         }
 
         public int? TimeTaken 
