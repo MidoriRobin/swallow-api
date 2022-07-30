@@ -19,6 +19,16 @@ namespace Swallow.Util;
                     if (prop == null) return false;
                     if (prop.GetType() == typeof(string) && string.IsNullOrEmpty((string)prop)) return false;
                     if (prop.GetType() == typeof(int) && prop.Equals(0)) return false;
+                    if (prop.GetType() == typeof(DateTime)) 
+                    {
+                        var asDate = (DateTime) prop;
+
+                        if (asDate.Year == 0001)
+                        {
+                            return false;                            
+                        }
+
+                    }
 
                     return true;
                 }
