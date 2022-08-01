@@ -185,10 +185,16 @@ namespace Swallow.Services.Postgres;
         {
             // Time is stored in utc so use ToLocalTime
             
-            DateTime expiry = _context.Users.Find(userId).TokenExpiry.Value.ToLocalTime();
-            bool isOldDate = DateTime.Now.Subtract(expiry).Hours >= 1 || DateTime.Now.Subtract(expiry).Minutes >= 1;
+            DateTime expiry = _context.Users.Find(userId).TokenExpiry.Value;
 
-            if (expiry == DateTime.UnixEpoch || isOldDate)
+            //TODO: Write into a function to process all date times coming from the database
+            DateTime utcExpiry = DateTime.SpecifyKind(expiry, DateTimeKind.Utc);
+
+            DateTime dateToLocal = utcExpiry.ToLocalTime();
+
+            bool isOldDate = DateTime.Now.Subtract(dateToLocal).Hours >= 1 || DateTime.Now.Subtract(dateToLocal).Minutes >= 1;
+
+            if (dateToLocal == DateTime.UnixEpoch || isOldDate)
             {
                 return false;
             }

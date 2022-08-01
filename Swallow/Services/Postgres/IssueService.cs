@@ -10,7 +10,7 @@ namespace Swallow.Services.Postgres;
     {
         IEnumerable<IssueResponse> GetAll();
         IssueResponse GetById(int issueId);
-        IEnumerable<IssueResponse> GetAllByUser(int userId);
+        IEnumerable<IssueResponse> GetAllByAssigned(int userId);
         IEnumerable<IssueResponse> GetAllByProject(int projectId);
 
         void Delete(int issueId);
@@ -60,12 +60,12 @@ public class IssueService : IIssueService
 
     public IEnumerable<IssueResponse> GetAllByProject(int projectId)
     {
-        var project = _context.Projects.Find(projectId);
+        var issues = _context.Issues.Where(i => i.ProjectId == projectId);
         IEnumerable<IssueResponse> responseList;
 
         try
         {
-            responseList = _mapper.Map<IList<IssueResponse>>(project.Issues);
+            responseList = _mapper.Map<IList<IssueResponse>>(issues);
             
         }
         catch (System.Exception)
@@ -77,20 +77,21 @@ public class IssueService : IIssueService
         return responseList;
     }
 
-    public IEnumerable<IssueResponse> GetAllByUser(int userId)
+    public IEnumerable<IssueResponse> GetAllByAssigned(int userId)
     {
-        var user = _context.Users.Find(userId);
         IEnumerable<IssueResponse> responseList;
 
         try
         {
-            responseList = _mapper.Map<IList<IssueResponse>>(user.AssignedIssues);
+            var issues = _context.Issues.Where(i => i.AssignedId == userId);
+
+            responseList = _mapper.Map<IList<IssueResponse>>(issues);
             
         }
         catch (System.Exception)
         {
             
-            throw new ApplicationException("Project not found");
+            throw new ApplicationException("Projects not found");
         }
 
         return responseList;
@@ -130,7 +131,7 @@ public class IssueService : IIssueService
         // Ensure only values permitted for editing are entered
         var issue = _mapper.Map<Issue>(newIssue);
 
-        issue.CreatedDate = DateTime.UtcNow;
+        issue.CreatedDate = DateTime.Now;
 
         try
         {

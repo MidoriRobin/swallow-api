@@ -16,24 +16,23 @@ namespace Swallow.Controllers;
     {
         // TODO: Test all routes
         private IIssueService _issueService;
-        // private readonly ProjectService _projectService;
+        private IProjectService _projectService;
 
-        public IssueController(IIssueService issueService)
+        public IssueController(IIssueService issueService, IProjectService projectService)
         {
             _issueService = issueService;
+            _projectService = projectService;
         }
 
 
-        // [Authorize("admin")]
-        [AllowAnonymous]
+        [Authorize("admin")]
         [HttpGet]
         public ActionResult<IssueResponse> GetAll()
         {
             return Ok(_issueService.GetAll());
         }
 
-        // [Authorize(Roles ="admin")]
-        [AllowAnonymous]
+        [Authorize("admin")]
         [HttpGet("{id}")]
         public IActionResult GetById(int id)
         {
@@ -53,6 +52,7 @@ namespace Swallow.Controllers;
             return Ok(issue);
         }
 
+        [Authorize("admin")]
         [HttpPost]
         public IActionResult Create([FromBody]CreateIssueReq newIssueItem)
         {
@@ -76,8 +76,7 @@ namespace Swallow.Controllers;
             return CreatedAtAction(actionName, routeValues, createdIssue);
         }
 
-        // [Authorize(Roles ="admin")]
-        [AllowAnonymous]
+        [Authorize("admin")]
         [HttpPut("{id}")]
         public IActionResult Update(int id, UpdateIssueReq updatedIssue)
         {
@@ -95,8 +94,8 @@ namespace Swallow.Controllers;
             return NoContent();
         }
 
-        // [Authorize(Roles ="admin")]
-        [HttpDelete("delete/{id:length(24)}")]
+        [Authorize("admin")]
+        [HttpDelete("{id}")]
         public IActionResult Delete(int id)
         {
             try
@@ -113,99 +112,107 @@ namespace Swallow.Controllers;
             return NoContent();
         }
 
-        // // User role methods
+        //* User role methods
 
-        // [HttpGet("byAssigned/{id:length(24)}")]
-        // public async Task<ActionResult<List<Issue>>> GetIssuesByAssigned(string id)
-        // {
-        //     var currentUser = HttpContext.User;
+        [HttpGet("assigned/{id}")]
+        public IActionResult GetIssuesByAssigned(int id)
+        {
+            var claimsId = getUserContextId();
 
-        //     var claimsId = currentUser.Claims.ToArray()[1].Value;
+            if (id != claimsId)
+            {
+                return Unauthorized();
+            }
 
-        //     if (id != claimsId)
-        //     {
-        //         return Unauthorized();
-        //     }
+            var usersIssues = _issueService.GetAllByAssigned(id);
 
-        //     var usersIssues = await _issueService.GetIssuesByAssignedIdAsync(id);
+            return Ok(usersIssues);
+        }
 
-        //     return usersIssues;
-        // }
+        [HttpPost("userCreate")]
+        public IActionResult CreateByUser([FromBody]CreateIssueReq newIssueItem)
+        {
+            IssueResponse createdIssue;
 
-        // // Add a 
-        // [HttpGet("byCreator/{id:length(24)}")]
-        // public async Task<ActionResult<List<Issue>>> GetIssuesByCreator(string id)
-        // {
-        //     var currentUser = HttpContext.User;
+            var userId = getUserContextId();
 
-        //     var claimsId = currentUser.Claims.ToArray()[1].Value;
+            try
+            {
+                var isInProject = _projectService.GetById(newIssueItem.ProjectId).CreatorId == userId;
 
-        //     if (id != claimsId)
-        //     {
-        //         return Unauthorized();
-        //     }
+                if (!isInProject)
+                {
+                    return Unauthorized();
+                }
 
-        //     var usersIssues = await _issueService.GetIssuesByCreatorAsync(id);
+                createdIssue = _issueService.Create(newIssueItem);
+            }
+            catch (KeyNotFoundException e)
+            {
+                return NotFound();
+            }
+            catch (System.Exception)
+            {
+                
+                return BadRequest();
+            }
 
-        //     return usersIssues;
-        // }
+            var actionName = nameof(GetById);
+            var routeValues = new { id = createdIssue.Id };
 
-        // // TODO: Fetch by status, fetch by date range(need a json body post req for that)
-
-        // [HttpGet("byProject/{id:length(24)}")]
-        // public async Task<ActionResult<List<Issue>>> GetIssuesByProject(string id, [FromBody]DateRangeDTO? dateRange)
-        // {
-
-        //     var currentUser = HttpContext.User;
-
-        //     var claimsId = currentUser.Claims.ToArray()[1].Value;
-
-        //     var project = await _projectService.GetProjectAsync(id);
-
-        //     if (project is null)
-        //     {
-        //         return NotFound();
-        //     }
-
-        //     if (!project.MemberList.Contains(claimsId) || project.OwnerId != claimsId)
-        //     {
-        //         return Unauthorized();
-        //     }
-        //     // TODO: Figure out how to match object ids for checks
-
-        //     List<Issue> projectIssues;
-
-        //     if (dateRange.start.Year == 1 || dateRange.start.Year == 1970)
-        //     {
-        //         projectIssues = await _issueService.GetIssuesByProjectAsync(id);    
-        //     } else {
-        //         projectIssues = await _issueService.GetIssuesByProjectInDateRangeAsync(id, dateRange.start, dateRange.end);
-
-        //     }
+            return CreatedAtAction(actionName, routeValues, createdIssue);
+        }
 
 
-        //     return projectIssues;
-        // }
+        [HttpPut("byUser/{id}")]
+        public IActionResult UpdateByUser(int id, [FromBody]UpdateIssueReq updatedIssue)
+        {
+
+            if (!CheckCreator(id))
+            {
+                return Unauthorized();
+            }
+
+            return Update(id, updatedIssue);
+        }
+
+        [HttpDelete("byUser/{id}")]
+        public IActionResult DeleteByUser(int id)
+        {
+
+            if (!CheckCreator(id))
+            {
+                return Unauthorized();
+            }
+
+            return Delete(id);
+        }
 
 
-        // [HttpGet("byProject/{id:length(24)}/byType/{type}")]
-        // public async Task<ActionResult<List<Issue>>> GetIssuesByProjectAndType(string id, string type)
-        // {
-        //     var currentUser = HttpContext.User;
+        private int getUserContextId(){
 
-        //     var claimsId = currentUser.Claims.ToArray()[1].Value;
+            var currentUser = HttpContext.User;
 
-        //     var isUserInProject = await _projectService.IsUserInProject(id, claimsId);
+            var claimsId = int.Parse(currentUser.Claims.ToArray()[1].Value);
 
-        //     if (!isUserInProject)
-        //     {
-        //         return NotFound();
-        //     }
+            return claimsId;
+        }
 
-        //     List<Issue> projectIssues = await _issueService.GetIssuesByTypeAndProjectIdAsync(type, id);
-            
-        //     return projectIssues;
-        // }
+        private bool CheckCreator(int issueId)
+        {
+            bool isValid = false;
+
+            var userId = getUserContextId();
+            var isCreator = _issueService.GetById(issueId).CreatorId == userId;
+
+            if (isCreator)
+            {
+                isValid = true;
+            }
+
+            return isValid;
+        }
+    
     }
 
     
